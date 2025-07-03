@@ -1,7 +1,8 @@
-import 'package:ad_english_dictionary/presentations/ai_dictionary/view/ai_dictionary_page.dart';
-import 'package:ad_english_dictionary/presentations/splash/view/splash_page.dart';
 import 'package:flutter/material.dart';
-import '../../presentations/home/view/home_page.dart';
+
+
+import '../../common/controller/controller.dart';
+import '../../presentation/home/view/home_page.dart';
 import 'routes_name.dart';
 
 class Routes {
@@ -9,12 +10,11 @@ class Routes {
     final arguments = settings.arguments;
 
     switch (settings.name) {
-      case RoutesName.splashPage:
+      // case RoutesName.splashPage:
       //   return MaterialPageRoute(builder: (_) => const SplashPage());
-      // case RoutesName.homePage:
-      //   return MaterialPageRoute(builder: (_) => const HomePage());
-      // case RoutesName.aiDictionaryPage:
-      //   return MaterialPageRoute(builder: (_) => const AiDictionaryPage());
+      case RoutesName.homePage:
+        return MaterialPageRoute(builder: (_) => HomeScreen());
+
       default:
         return MaterialPageRoute(
           builder: (_) => Scaffold(

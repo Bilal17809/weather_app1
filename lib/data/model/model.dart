@@ -1,4 +1,4 @@
-class MaltaCity {
+class Malta {
   final String city;
   final String cityAscii;
   final double lat;
@@ -10,8 +10,9 @@ class MaltaCity {
   final String capital;
   final int? population;
   final int id;
+  double? temperature;
 
-  MaltaCity({
+  Malta({
     required this.city,
     required this.cityAscii,
     required this.lat,
@@ -21,12 +22,13 @@ class MaltaCity {
     required this.iso3,
     required this.adminName,
     required this.capital,
-    required this.population,
+    this.population,
     required this.id,
+    this.temperature,
   });
 
-  factory MaltaCity.fromJson(Map<String, dynamic> json) {
-    return MaltaCity(
+  factory Malta.fromJson(Map<String, dynamic> json) {
+    return Malta(
       city: json['city'],
       cityAscii: json['city_ascii'],
       lat: (json['lat'] as num).toDouble(),
@@ -36,7 +38,7 @@ class MaltaCity {
       iso3: json['iso3'],
       adminName: json['admin_name'],
       capital: json['capital'],
-      population: json['population'] ?? 0,
+      population: json['population'] != null ? (json['population'] as num).toInt() : null,
       id: json['id'],
     );
   }
@@ -54,6 +56,7 @@ class MaltaCity {
       'capital': capital,
       'population': population,
       'id': id,
+      'temperature': temperature,
     };
   }
 }
