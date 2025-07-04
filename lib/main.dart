@@ -4,18 +4,21 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:weather/core/routes/routes.dart';
 import 'package:weather/core/routes/routes_name.dart';
+import 'package:weather/share_reference/share_reference.dart';
 
 import 'common/controller/controller.dart';
 
 
 Future<void> main()  async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
+  WidgetsFlutterBinding.ensureInitialized(); // required for SharedPreferences before runApp()
 
 
   Get.put(CityController());
 
   runApp(const MyApp());
 }
+
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});

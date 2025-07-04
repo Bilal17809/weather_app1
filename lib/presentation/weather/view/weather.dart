@@ -12,6 +12,25 @@ class weather extends StatelessWidget {
   final CityController ctr = Get.put(CityController());
   @override
   Widget build(BuildContext context) {
+    List<String> assetPaths = [
+      'assets/images/pic.png',
+      'assets/images/weather1.png',
+      'assets/images/weather2.png',
+      'assets/images/weather3.png',
+      'assets/images/weather4.png',
+      'assets/images/weather5.png',
+    ];
+
+    final List<Widget> imageWidgets = assetPaths.map((path) {
+      return Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Image.asset(
+          path,
+          width: 50,
+          height: 50,
+        ),
+      );
+    }).toList();
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xFF001B31),
@@ -108,93 +127,30 @@ class weather extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.only(left: 50,right: 30),
-              child: Column(
-                children: [
-                  SizedBox(height: 10,),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child:Expanded(
+                child: Obx(() {
+                  final hourly = Get.find<CityController>().hourlyList;
+                  if (hourly.isEmpty) return Center(child: Text("No data", style: TextStyle(color: Colors.white)));
+
+                  final h = hourly.first; // just show first entry's details
+
+                  return Column(
                     children: [
-                      Text("Wind",style: TextStyle(
-                          color: Colors.white
-                      ),),
-                      Text("3m/s           ",style: TextStyle(
-                          color: Colors.white
-                      ),)
-
+                      buildInfoRow("Wind", "828 m/s"),
+                      buildInfoRow("Humidity", "70%"),
+                      buildInfoRow("Atm pressure", "75 mmHg"),
+                      buildInfoRow("Water", "834"),
+                      buildInfoRow("Moonrise", "827"),
+                      buildInfoRow("Moonset", "86773"),
                     ],
-                  ),
-                  SizedBox(height: 10,),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Humidity",style: TextStyle(
-                          color: Colors.white
-                      ),),
-                      Text("70%            ",style: TextStyle(
-                          color: Colors.white
-                      ),)
-
-                    ],
-                  ),
-                  SizedBox(height: 10,),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Atm pressure",style: TextStyle(
-                          color: Colors.white
-                      ),),
-                      Text("756 mmHG",style: TextStyle(
-                          color: Colors.white
-                      ),)
-
-                    ],
-                  ),
-                  SizedBox(height: 10,),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Water",style: TextStyle(
-                          color: Colors.white
-                      ),),
-                      Text("23              ",style: TextStyle(
-                          color: Colors.white
-                      ),)
-
-                    ],
-                  ),
-                  SizedBox(height: 10,),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Moonrise",style: TextStyle(
-                          color: Colors.white
-                      ),),
-                      Text("22:40         ",style: TextStyle(
-                          color: Colors.white
-                      ),)
-
-                    ],
-                  ),
-                  SizedBox(height: 10,),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Moonset",style: TextStyle(
-                          color: Colors.white
-                      ),),
-                      Text("20:26         ",style: TextStyle(
-                          color: Colors.white
-                      ),)
-
-                    ],
-                  ),
-                  SizedBox(height: 10,),
-
-
-
-                ],
+                  );
+                }),
               ),
+
             ),
+
+
+
             Divider(
               color: Colors.grey,    // Line color
               thickness: 1,          // Line thickness
@@ -216,12 +172,12 @@ class weather extends StatelessWidget {
                       child: Column(
                         children: [
                           SizedBox(height: 9),
-                          Image.network(
-                            "https://openweathermap.org/img/wn/${h.icon}@2x.png",
-                            width: 50,
-                            height: 50,
+                          SingleChildScrollView(
+                            scrollDirection: Axis.vertical,
+                            child:...imageWidgets
                           ),
-                          SizedBox(height: 10),
+
+                         SizedBox(height: 10),
                           Text(
                             h.time,
                             style: TextStyle(color: Colors.white, fontSize: 13),
@@ -267,4 +223,16 @@ class weather extends StatelessWidget {
       ),
     );
   }
+}
+Widget buildInfoRow(String label, String value) {
+  return Padding(
+    padding: const EdgeInsets.only(bottom: 10),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(label, style: TextStyle(color: Colors.white)),
+        Text(value, style: TextStyle(color: Colors.white)),
+      ],
+    ),
+  );
 }

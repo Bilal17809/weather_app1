@@ -19,6 +19,7 @@ class CityController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    loadHourlyFromPrefs();
     loadCities().then((_) => restoreSelectedPreview());
   }
 
@@ -47,16 +48,26 @@ class CityController extends GetxController {
   Future<double?> fetchCityTemperature(double lat, double lng) async {
     final url =
         'https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lng&units=metric&appid=$apiKey';
+    // 'https://api.openweathermap.org/data/2.5/onecall?lat=$lat&lon=$lng&exclude=current,minutely,hourly,alerts&appid=$apiKey';
+
 
     try {
-      final response = await http.get(Uri.parse(url)).timeout(Duration(seconds: 10));
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final temp = data['main']?['temp'];
 
         if (temp != null) {
-          return (temp as num).toDouble();
+          final double temperature = (temp as num).toDouble();
+
+          /// ✅ Save temperature to SharedPreferences
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setDouble('last_temperature', temperature);
+
+          return temperature;
         } else {
           print('⚠️ Temperature field missing in response');
         }
@@ -69,6 +80,7 @@ class CityController extends GetxController {
 
     return null;
   }
+
   Future<void> fetchHourlyForecast(double lat, double lon) async {
     final url =
         'https://api.openweathermap.org/data/2.5/forecast?lat=$lat&lon=$lon&units=metric&appid=$apiKey';
@@ -85,10 +97,11 @@ class CityController extends GetxController {
         final List<dynamic> forecastList = data['list'];
         print("📦 Forecast items found: ${forecastList.length}");
 
-        final items = forecastList.take(5).map((e) {
-          print("➡️ Parsing: ${e['dt_txt']}");
-          return HourlyWeather.fromJson(e);
-        }).toList();
+        final items =
+            forecastList.take(10).map((e) {
+              print("➡️ Parsing: ${e['dt_txt']}");
+              return HourlyWeather.fromJson(e);
+            }).toList();
 
         hourlyList.value = items;
         print("✅ Parsed hourlyList with ${items.length} entries");
@@ -105,7 +118,9 @@ class CityController extends GetxController {
     loading.value = true;
 
     try {
-      final jsonString = await rootBundle.loadString('assets/MaltaWeather.json');
+      final jsonString = await rootBundle.loadString(
+        'assets/MaltaWeather.json',
+      );
       final jsonList = json.decode(jsonString) as List;
       final loadedCities = jsonList.map((e) => Malta.fromJson(e)).toList();
 
@@ -130,6 +145,32 @@ class CityController extends GetxController {
     await prefs.setString('city_preview', jsonString);
   }
 
+
+
+  Future<void> loadHourlyFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String>? hourlyJsonList = prefs.getStringList('hourly_data');
+
+    if (hourlyJsonList != null) {
+      final List<HourlyWeather> loadedHourly = hourlyJsonList
+          .map((jsonStr) => HourlyWeather.fromJson(jsonDecode(jsonStr)))
+          .toList();
+      hourlyList.assignAll(loadedHourly);
+      print("✅ Loaded ${loadedHourly.length} hourly items from SharedPreferences");
+    } else {
+      print("⚠️ No hourly data found in SharedPreferences");
+    }
+  }
+
+
+
+  Future<void> saveHourlyToPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String> hourlyJsonList =
+        hourlyList.map((h) => jsonEncode(h.toJson())).toList();
+    await prefs.setStringList('hourly_data', hourlyJsonList);
+  }
+
   /// Load city preview from SharedPreferences
   Future<CityModel?> loadCityPreview() async {
     final prefs = await SharedPreferences.getInstance();
@@ -149,13 +190,15 @@ class CityController extends GetxController {
 
     if (preview != null) {
       final matched = cityList.firstWhereOrNull(
-            (c) => c.city.toLowerCase() == preview.city.toLowerCase(),
+        (c) => c.city.toLowerCase() == preview.city.toLowerCase(),
       );
 
       if (matched != null) {
         matched.temperature = preview.temperature;
         selectedCity.value = matched;
-        print("✅ Restored city: ${matched.city} | Temp: ${matched.temperature}");
+        print(
+          "✅ Restored city: ${matched.city} | Temp: ${matched.temperature}",
+        );
       } else {
         print("❌ Saved city not found in loaded list.");
       }
@@ -171,12 +214,13 @@ class CityController extends GetxController {
 }
 
 class HourlyWeather {
-  final String day;         // e.g. "Thu"
+  final String day; // e.g. "Thu"
   final String time;
   final double temperature;
-  final double tempMin;     // e.g. 27.3
-  final double tempMax;     // e.g. 30.5
+  final double tempMin; // e.g. 27.3
+  final double tempMax; // e.g. 30.5
   final String icon;
+
 
   HourlyWeather({
     required this.day,
@@ -185,22 +229,27 @@ class HourlyWeather {
     required this.tempMin,
     required this.tempMax,
     required this.icon,
+
   });
 
   factory HourlyWeather.fromJson(Map<String, dynamic> json) {
     final dateTime = DateTime.parse(json['dt_txt']);
 
-    final formattedDay = DateFormat('E').format(dateTime);        // Thu
-    final formattedTime = DateFormat('h:mm a').format(dateTime);  // 3:00 PM
+    final weekday = HourlyWeather._getWeekday(dateTime.weekday); // Thu
+    final formattedTime = DateFormat('h:mm a').format(dateTime); // 3:00 PM
 
     return HourlyWeather(
-      day: formattedDay,
+      day: weekday,
       time: formattedTime,
       temperature: (json['main']['temp'] as num).toDouble(),
       tempMin: (json['main']['temp_min'] as num).toDouble(),
       tempMax: (json['main']['temp_max'] as num).toDouble(),
       icon: json['weather'][0]['icon'],
     );
+  }
+  static String _getWeekday(int day) {
+    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+    return days[(day - 1) % 7];
   }
 
   Map<String, dynamic> toJson() => {
@@ -212,6 +261,3 @@ class HourlyWeather {
     'icon': icon,
   };
 }
-
-
-

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-
-
-import '../../common/controller/controller.dart';
+import 'package:weather/presentation/weather/view/weather.dart';
+import '../../presentation/city/view/city.dart';
 import '../../presentation/home/view/home_page.dart';
 import 'routes_name.dart';
 
@@ -14,6 +13,10 @@ class Routes {
       //   return MaterialPageRoute(builder: (_) => const SplashPage());
       case RoutesName.homePage:
         return MaterialPageRoute(builder: (_) => HomeScreen());
+      case RoutesName.weatherpage:
+        return MaterialPageRoute(builder: (_)=>weather());
+      case RoutesName.citypage:
+        return MaterialPageRoute(builder: (_)=>City());
 
       default:
         return MaterialPageRoute(

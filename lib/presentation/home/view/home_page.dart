@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:intl/intl.dart';
+import 'package:weather/core/routes/routes_name.dart';
 
 
 import '../../../common/controller/controller.dart';
@@ -61,10 +62,7 @@ class HomeScreen extends StatelessWidget {
                 alignment: Alignment.topLeft,
                 child: InkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => City()),
-                    );
+                    Navigator.pushNamed(context, RoutesName.citypage);
                   },
                   child: Icon(
                     Icons.add_circle_sharp,
@@ -140,54 +138,60 @@ class HomeScreen extends StatelessWidget {
                       child: Obx(() {
                         final hourly = Get.find<CityController>().hourlyList;
 
-                        if (hourly.isEmpty) return CircularProgressIndicator();
+                        if (hourly.isEmpty) return CircularProgressIndicator(    );
 
-                        return Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: hourly.map((h) {
-                            return Column(
-                              children: [
-                                SizedBox(height: 9),
-                                Image.network(
-                                  "https://openweathermap.org/img/wn/${h.icon}@2x.png",
-                                  width: 50,
-                                  height: 50,
-                                ),
-                                SizedBox(height: 10),
-                                Text(
-                                  h.time,
-                                  style: TextStyle(color: Colors.white, fontSize: 13),
-                                ),
-                                Text.rich(
-                                  TextSpan(
-                                    children: [
+                        return SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: hourly.map((h) {
+                              return Padding(
+                                padding: const EdgeInsets.only(left: 8.0,right: 8),
+                                child: Column(
+                                  children: [
+                                    SizedBox(height: 9),
+                                    Image.network(
+                                      "https://openweathermap.org/img/wn/${h.icon}@2x.png",
+                                      width: 50,
+                                      height: 50,
+                                    ),
+                                    SizedBox(height: 10),
+                                    Text(
+                                      h.time,
+                                      style: TextStyle(color: Colors.white, fontSize: 13),
+                                    ),
+                                    Text.rich(
                                       TextSpan(
-                                        text: "${h.temperature.round()}",
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      WidgetSpan(
-                                        child: Transform.translate(
-                                          offset: const Offset(2, 1),
-                                          child: Text(
-                                            '°',
+                                        children: [
+                                          TextSpan(
+                                            text: "${h.temperature.round()}",
                                             style: TextStyle(
                                               fontSize: 20,
                                               fontWeight: FontWeight.bold,
                                               color: Colors.white,
                                             ),
                                           ),
-                                        ),
+                                          WidgetSpan(
+                                            child: Transform.translate(
+                                              offset: const Offset(2, 1),
+                                              child: Text(
+                                                '°',
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            );
-                          }).toList(),
+                              );
+                            }).toList(),
+                          ),
                         );
                       })
 
@@ -209,15 +213,12 @@ class HomeScreen extends StatelessWidget {
                         return SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
-                            children: hourly.map((h) {
+                            children: hourly.take(7).map((h)  {
                               return Padding(
                                 padding: const EdgeInsets.symmetric(horizontal: 8),
                                 child: InkWell(
                                   onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(builder: (context) => weather()),
-                                    );
+                                    Navigator.pushNamed(context, RoutesName.weatherpage);
                                   },
                                   child: Column(
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -230,7 +231,7 @@ class HomeScreen extends StatelessWidget {
                                       ),
                                       SizedBox(height: 10),
                                       Text(
-                                        "${h.day}, ${h.time}",
+                                        "${h.day}",
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
