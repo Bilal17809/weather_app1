@@ -2,9 +2,8 @@ import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
+import '../../data/model/curr_model/curr_model.dart';
 import '../../data/model/model.dart';
 import '../../share_reference/share_reference.dart';
 
@@ -13,8 +12,10 @@ class CityController extends GetxController {
   RxBool loading = true.obs;
   Rx<Malta?> selectedCity = Rx<Malta?>(null);
   RxList<HourlyWeather> hourlyList = <HourlyWeather>[].obs;
-  final String apiKey = '7d7cead5f21da78ea50ea22ff44f5797';
+  RxList<HourlyWeather> dailySummaries = <HourlyWeather>[].obs;
 
+
+  final String apiKey = '7d7cead5f21da78ea50ea22ff44f5797';
 
   @override
   void onInit() {
@@ -44,32 +45,31 @@ class CityController extends GetxController {
     await saveCityPreview(model);
   }
 
+
+
   /// Fetch temperature from OpenWeatherMap using lat/lng
   Future<double?> fetchCityTemperature(double lat, double lng) async {
-    final url =
-        'https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lng&units=metric&appid=$apiKey';
-    // 'https://api.openweathermap.org/data/2.5/onecall?lat=$lat&lon=$lng&exclude=current,minutely,hourly,alerts&appid=$apiKey';
-
+    final url = Uri.parse(
+      'http://api.weatherapi.com/v1/forecast.json?key=07e14a15571440079f5110300250407&q=$lat,$lng&days=7&aqi=no&alerts=no',
+    );
 
     try {
-      final response = await http
-          .get(Uri.parse(url))
-          .timeout(const Duration(seconds: 5));
+      final response = await http.get(url).timeout(const Duration(seconds: 5));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final temp = data['main']?['temp'];
+        final temp = data['current']?['temp_c'];
 
         if (temp != null) {
           final double temperature = (temp as num).toDouble();
 
-          /// ✅ Save temperature to SharedPreferences
+          /// ✅ Save to SharedPreferences
           final prefs = await SharedPreferences.getInstance();
           await prefs.setDouble('last_temperature', temperature);
 
           return temperature;
         } else {
-          print('⚠️ Temperature field missing in response');
+          print('⚠️ Temperature missing in response');
         }
       } else {
         print('❌ API error: ${response.statusCode}');
@@ -82,29 +82,35 @@ class CityController extends GetxController {
   }
 
   Future<void> fetchHourlyForecast(double lat, double lon) async {
-    final url =
-        'https://api.openweathermap.org/data/2.5/forecast?lat=$lat&lon=$lon&units=metric&appid=$apiKey';
-
+    final url = Uri.parse('http://api.weatherapi.com/v1/forecast.json?key=07e14a15571440079f5110300250407&q=$lat,$lon&days=1&aqi=no&alerts=no',);
     print("📡 Requesting forecast: $url");
 
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(url);
       print("🌐 Response status: ${response.statusCode}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        final List<dynamic> forecastList =
+        data['forecast']?['forecastday']?[0]?['hour'];
 
-        final List<dynamic> forecastList = data['list'];
-        print("📦 Forecast items found: ${forecastList.length}");
+        if (forecastList != null) {
+          final items = forecastList.map((e) {
+            print("➡️ Parsing hour: ${e['time']}");
+            return HourlyWeather.fromJson(e);
+          }).toList();
 
-        final items =
-            forecastList.take(10).map((e) {
-              print("➡️ Parsing: ${e['dt_txt']}");
-              return HourlyWeather.fromJson(e);
-            }).toList();
+          hourlyList.value = items;
 
-        hourlyList.value = items;
-        print("✅ Parsed hourlyList with ${items.length} entries");
+          /// ✅ Add this line to compute daily summaries from hourlyList
+
+          /// ✅ Optionally store hourly data
+          await saveHourlyToPrefs();
+
+          print("✅ Parsed hourlyList with ${items.length} entries");
+        } else {
+          print("⚠️ Hourly forecast data not found");
+        }
       } else {
         print("❌ Forecast API Error: ${response.statusCode}");
       }
@@ -112,6 +118,7 @@ class CityController extends GetxController {
       print("❌ Forecast fetch failed: $e");
     }
   }
+
 
   /// Load cities from JSON and update temperatures
   Future<void> loadCities() async {
@@ -145,24 +152,23 @@ class CityController extends GetxController {
     await prefs.setString('city_preview', jsonString);
   }
 
-
-
   Future<void> loadHourlyFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final List<String>? hourlyJsonList = prefs.getStringList('hourly_data');
 
     if (hourlyJsonList != null) {
-      final List<HourlyWeather> loadedHourly = hourlyJsonList
-          .map((jsonStr) => HourlyWeather.fromJson(jsonDecode(jsonStr)))
-          .toList();
+      final List<HourlyWeather> loadedHourly =
+          hourlyJsonList
+              .map((jsonStr) => HourlyWeather.fromJson(jsonDecode(jsonStr)))
+              .toList();
       hourlyList.assignAll(loadedHourly);
-      print("✅ Loaded ${loadedHourly.length} hourly items from SharedPreferences");
+      print(
+        "✅ Loaded ${loadedHourly.length} hourly items from SharedPreferences",
+      );
     } else {
       print("⚠️ No hourly data found in SharedPreferences");
     }
   }
-
-
 
   Future<void> saveHourlyToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
@@ -213,51 +219,3 @@ class CityController extends GetxController {
   }
 }
 
-class HourlyWeather {
-  final String day; // e.g. "Thu"
-  final String time;
-  final double temperature;
-  final double tempMin; // e.g. 27.3
-  final double tempMax; // e.g. 30.5
-  final String icon;
-
-
-  HourlyWeather({
-    required this.day,
-    required this.time,
-    required this.temperature,
-    required this.tempMin,
-    required this.tempMax,
-    required this.icon,
-
-  });
-
-  factory HourlyWeather.fromJson(Map<String, dynamic> json) {
-    final dateTime = DateTime.parse(json['dt_txt']);
-
-    final weekday = HourlyWeather._getWeekday(dateTime.weekday); // Thu
-    final formattedTime = DateFormat('h:mm a').format(dateTime); // 3:00 PM
-
-    return HourlyWeather(
-      day: weekday,
-      time: formattedTime,
-      temperature: (json['main']['temp'] as num).toDouble(),
-      tempMin: (json['main']['temp_min'] as num).toDouble(),
-      tempMax: (json['main']['temp_max'] as num).toDouble(),
-      icon: json['weather'][0]['icon'],
-    );
-  }
-  static String _getWeekday(int day) {
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    return days[(day - 1) % 7];
-  }
-
-  Map<String, dynamic> toJson() => {
-    'day': day,
-    'time': time,
-    'temperature': temperature,
-    'tempMin': tempMin,
-    'tempMax': tempMax,
-    'icon': icon,
-  };
-}

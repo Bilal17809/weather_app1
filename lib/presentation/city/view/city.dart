@@ -157,7 +157,7 @@ class City extends StatelessWidget {
                                                     .toStringAsFixed(1)
                                                     : 'Loading...',
                                                 style: const TextStyle(
-                                                  fontSize: 30,
+                                                  fontSize: 26,
                                                   fontWeight: FontWeight.bold,
                                                   color: Colors.white,
                                                 ),

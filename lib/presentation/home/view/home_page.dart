@@ -5,9 +5,9 @@ import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:weather/core/routes/routes_name.dart';
 
-
 import '../../../common/controller/controller.dart';
 
+import '../../../lists/icon_list.dart';
 import '../../city/view/city.dart';
 import '../../weather/view/weather.dart';
 
@@ -21,7 +21,7 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: Color(0xFF001B31),
         automaticallyImplyLeading: false,
-        title:Obx(() {
+        title: Obx(() {
           final city = ctr.selectedCity.value;
           final now = DateTime.now();
           final formattedDate = DateFormat('EEEE d MMMM').format(now);
@@ -74,7 +74,6 @@ class HomeScreen extends StatelessWidget {
             ],
           );
         }),
-
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -102,8 +101,8 @@ class HomeScreen extends StatelessWidget {
                   width: 160, // set your desired width
                   height: 120, // set your desired height
                   fit:
-                  BoxFit
-                      .cover, // optional, defines how the image should be fitted
+                      BoxFit
+                          .cover, // optional, defines how the image should be fitted
                 ),
                 SizedBox(height: 10),
                 Text(
@@ -123,185 +122,217 @@ class HomeScreen extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(left: 10, right: 10),
                   child: Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(10),
-                        color: Color(0xFF85DFC7).withOpacity(0.7),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2), // Shadow color
-                            spreadRadius: 2, // How much the shadow spreads
-                            blurRadius: 6, // How soft the shadow is
-                            offset: Offset(4, 4), // x, y: move right & down
-                          ),
-                        ],
-                      ),
-                      child: Obx(() {
-                        final hourly = Get.find<CityController>().hourlyList;
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(10),
+                      color: Color(0xFF85DFC7).withOpacity(0.7),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2), // Shadow color
+                          spreadRadius: 2, // How much the shadow spreads
+                          blurRadius: 6, // How soft the shadow is
+                          offset: Offset(4, 4), // x, y: move right & down
+                        ),
+                      ],
+                    ),
+                    child: Obx(() {
+                      final hourly = Get.find<CityController>().hourlyList;
 
-                        if (hourly.isEmpty) return CircularProgressIndicator(    );
-
-                        return SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: hourly.map((h) {
-                              return Padding(
-                                padding: const EdgeInsets.only(left: 8.0,right: 8),
-                                child: Column(
-                                  children: [
-                                    SizedBox(height: 9),
-                                    Image.network(
-                                      "https://openweathermap.org/img/wn/${h.icon}@2x.png",
-                                      width: 50,
-                                      height: 50,
-                                    ),
-                                    SizedBox(height: 10),
-                                    Text(
-                                      h.time,
-                                      style: TextStyle(color: Colors.white, fontSize: 13),
-                                    ),
-                                    Text.rich(
-                                      TextSpan(
-                                        children: [
-                                          TextSpan(
-                                            text: "${h.temperature.round()}",
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
-                                          ),
-                                          WidgetSpan(
-                                            child: Transform.translate(
-                                              offset: const Offset(2, 1),
-                                              child: Text(
-                                                '°',
-                                                style: TextStyle(
-                                                  fontSize: 20,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }).toList(),
+                      if (hourly.isEmpty) {
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF00A67D),
                           ),
                         );
-                      })
+                      }
 
-                  ),
-                ),
-                SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10),
-                  child: Container(
-                      child:Obx(() {
-                        final hourly = Get.find<CityController>().hourlyList;
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: List.generate(5, (index) {
+                            final h = hourly[index];
+                            final imagePath =
+                                assetPaths[index %
+                                    assetPaths.length]; // Safe fallback
 
-                        if (hourly.isEmpty) {
-                          return Center(
-                            child: CircularProgressIndicator(color: Color(0xFF00A67D)),
-                          );
-                        }
-
-                        return SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: hourly.take(7).map((h)  {
-                              return Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
-                                child: InkWell(
-                                  onTap: () {
-                                    Navigator.pushNamed(context, RoutesName.weatherpage);
-                                  },
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                    children: [
-                                      SizedBox(height: 9),
-                                      Image.network(
-                                        "https://openweathermap.org/img/wn/${h.icon}@2x.png",
-                                        width: 45,
-                                        height: 45,
-                                      ),
-                                      SizedBox(height: 10),
-                                      Text(
-                                        "${h.day}",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text.rich(
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 8,
+                              ),
+                              child: Column(
+                                children: [
+                                  SizedBox(height: 9),
+                                  Image.asset(
+                                    imagePath,
+                                    width: 50,
+                                    height: 50,
+                                    fit: BoxFit.cover,
+                                  ),
+                                  SizedBox(height: 10),
+                                  Text(
+                                    h.time,
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  Text.rich(
+                                    TextSpan(
+                                      children: [
                                         TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: "${h.tempMax.round()}",
-                                              style: TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                                color: Color(0xFF01474E),
-                                              ),
-                                            ),
-                                            WidgetSpan(
-                                              child: Transform.translate(
-                                                offset: Offset(2, 1),
-                                                child: Text(
-                                                  '°',
-                                                  style: TextStyle(
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Color(0xFF01474E),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ],
+                                          text: "${h.temperature.round()}",
+                                          style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
                                         ),
-                                      ),
-                                      Text.rich(
-                                        TextSpan(
-                                          children: [
-                                            TextSpan(
-                                              text: "${h.tempMin.round()}",
+                                        WidgetSpan(
+                                          child: Transform.translate(
+                                            offset: const Offset(2, 1),
+                                            child: Text(
+                                              '°',
                                               style: TextStyle(
                                                 fontSize: 20,
                                                 fontWeight: FontWeight.bold,
                                                 color: Colors.white,
                                               ),
                                             ),
-                                            WidgetSpan(
-                                              child: Transform.translate(
-                                                offset: Offset(2, 1),
-                                                child: Text(
-                                                  '°',
-                                                  style: TextStyle(
-                                                    fontSize: 20,
-                                                    fontWeight: FontWeight.bold,
-                                                    color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ),
+                      );
+                    }),
+                  ),
+                ),
+                SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  child: Container(
+                    child: Obx(() {
+                      final hourly = Get.find<CityController>().hourlyList;
+
+                      if (hourly.isEmpty) {
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFF00A67D),
+                          ),
+                        );
+                      }
+
+                      return SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            InkWell(
+                              onTap: () {
+                                Navigator.pushNamed(
+                                  context,
+                                  RoutesName.weatherpage,
+                                );
+                              },
+                              child: Row(
+                                children: List.generate(7, (index) {
+                                  final h = hourly[index];
+                                  final imagePath =
+                                      assetPaths[index % assetPaths.length];
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                    ),
+                                    child: Column(
+                                      children: [
+                                        SizedBox(height: 9),
+                                        Image.network(
+                                          h.icon,
+                                          width: 80,
+                                          height: 80,
+                                          fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) => Icon(Icons.error, color: Colors.red),
+                                        ),
+                                        SizedBox(height: 10),
+
+                                        Text(
+                                          h.day,
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4),
+                                        Text.rich(
+                                          TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: "${h.tempMax.round()}",
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Color(0xFF01474E),
+                                                ),
+                                              ),
+                                              WidgetSpan(
+                                                child: Transform.translate(
+                                                  offset: Offset(2, 1),
+                                                  child: Text(
+                                                    '°',
+                                                    style: TextStyle(
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Color(0xFF01474E),
+                                                    ),
                                                   ),
                                                 ),
                                               ),
-                                            ),
-                                          ],
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            }).toList(),
-                          ),
-                        );
-                      })
-
+                                        Text.rich(
+                                          TextSpan(
+                                            children: [
+                                              TextSpan(
+                                                text: "${h.tempMin.round()}",
+                                                style: TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                              WidgetSpan(
+                                                child: Transform.translate(
+                                                  offset: Offset(2, 1),
+                                                  child: Text(
+                                                    '°',
+                                                    style: TextStyle(
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.white,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                }),
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
                   ),
                 ),
               ],

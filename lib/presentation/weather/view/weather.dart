@@ -21,16 +21,7 @@ class weather extends StatelessWidget {
       'assets/images/weather5.png',
     ];
 
-    final List<Widget> imageWidgets = assetPaths.map((path) {
-      return Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Image.asset(
-          path,
-          width: 50,
-          height: 50,
-        ),
-      );
-    }).toList();
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xFF001B31),
@@ -127,25 +118,23 @@ class weather extends StatelessWidget {
             ),
             Padding(
               padding: const EdgeInsets.only(left: 50,right: 30),
-              child:Expanded(
-                child: Obx(() {
-                  final hourly = Get.find<CityController>().hourlyList;
-                  if (hourly.isEmpty) return Center(child: Text("No data", style: TextStyle(color: Colors.white)));
+              child:Obx(() {
+                final hourly = Get.find<CityController>().hourlyList;
+                if (hourly.isEmpty) return Center(child: Text("No data", style: TextStyle(color: Colors.white)));
 
-                  final h = hourly.first; // just show first entry's details
+                final h = hourly.first; // just show first entry's details
 
-                  return Column(
-                    children: [
-                      buildInfoRow("Wind", "828 m/s"),
-                      buildInfoRow("Humidity", "70%"),
-                      buildInfoRow("Atm pressure", "75 mmHg"),
-                      buildInfoRow("Water", "834"),
-                      buildInfoRow("Moonrise", "827"),
-                      buildInfoRow("Moonset", "86773"),
-                    ],
-                  );
-                }),
-              ),
+                return Column(
+                  children: [
+                    buildInfoRow("Wind", "828 m/s"),
+                    buildInfoRow("Humidity", "70%"),
+                    buildInfoRow("Atm pressure", "75 mmHg"),
+                    buildInfoRow("Water", "834"),
+                    buildInfoRow("Moonrise", "827"),
+                    buildInfoRow("Moonset", "86773"),
+                  ],
+                );
+              }),
 
             ),
 
@@ -159,25 +148,30 @@ class weather extends StatelessWidget {
               final hourly = Get.find<CityController>().hourlyList;
 
               if (hourly.isEmpty) {
-                return Center(child: CircularProgressIndicator());
+                return Center(
+                  child: CircularProgressIndicator(color: Color(0xFF00A67D)),
+                );
               }
 
               return SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: hourly.map((h) {
+                  children: List.generate(5, (index) {
+                    final h = hourly[index];
+                    final imagePath = assetPaths[index % assetPaths.length]; // Safe fallback
+
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       child: Column(
                         children: [
                           SizedBox(height: 9),
-                          SingleChildScrollView(
-                            scrollDirection: Axis.vertical,
-                            child:...imageWidgets
+                          Image.asset(
+                            imagePath,
+                            width: 50,
+                            height: 50,
+                            fit: BoxFit.cover,
                           ),
-
-                         SizedBox(height: 10),
+                          SizedBox(height: 10),
                           Text(
                             h.time,
                             style: TextStyle(color: Colors.white, fontSize: 13),
@@ -212,7 +206,7 @@ class weather extends StatelessWidget {
                         ],
                       ),
                     );
-                  }).toList(),
+                  }),
                 ),
               );
             }),
