@@ -10,19 +10,10 @@ import '../../city/view/city.dart';
 class weather extends StatelessWidget {
   weather({super.key});
   final CityController ctr = Get.put(CityController());
+
   @override
   Widget build(BuildContext context) {
-    List<String> assetPaths = [
-      'assets/images/pic.png',
-      'assets/images/weather1.png',
-      'assets/images/weather2.png',
-      'assets/images/weather3.png',
-      'assets/images/weather4.png',
-      'assets/images/weather5.png',
-    ];
-
-
-    return Scaffold(
+      return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xFF001B31),
         automaticallyImplyLeading: false,
@@ -119,19 +110,20 @@ class weather extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: 50,right: 30),
               child:Obx(() {
-                final hourly = Get.find<CityController>().hourlyList;
-                if (hourly.isEmpty) return Center(child: Text("No data", style: TextStyle(color: Colors.white)));
+                final detail = Get.find<CityController>().details;
+                if (detail.isEmpty) return Center(child: Text("c", style: TextStyle(color: Colors.white)));
 
-                final h = hourly.first; // just show first entry's details
+                final d = detail.first; // just show first entry's details
 
                 return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    buildInfoRow("Wind", "828 m/s"),
-                    buildInfoRow("Humidity", "70%"),
-                    buildInfoRow("Atm pressure", "75 mmHg"),
-                    buildInfoRow("Water", "834"),
-                    buildInfoRow("Moonrise", "827"),
-                    buildInfoRow("Moonset", "86773"),
+                    buildInfoRow("Wind", d.wind),
+                    buildInfoRow("Humidity", d.humidity),
+                    buildInfoRow("Atm pressure", d.pressure),
+                    buildInfoRow("Water", d.precip),
+                    buildInfoRow("Moonrise", d.moonrise),
+                    buildInfoRow("Moonset", d.moonset),
                   ],
                 );
               }),
@@ -147,9 +139,12 @@ class weather extends StatelessWidget {
             Obx(() {
               final hourly = Get.find<CityController>().hourlyList;
 
+
               if (hourly.isEmpty) {
                 return Center(
-                  child: CircularProgressIndicator(color: Color(0xFF00A67D)),
+                  child: CircularProgressIndicator(
+                    color: Color(0xFF00A67D),
+                  ),
                 );
               }
 
@@ -158,15 +153,17 @@ class weather extends StatelessWidget {
                 child: Row(
                   children: List.generate(5, (index) {
                     final h = hourly[index];
-                    final imagePath = assetPaths[index % assetPaths.length]; // Safe fallback
+                  // Safe fallback
 
                     return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                      ),
                       child: Column(
                         children: [
                           SizedBox(height: 9),
-                          Image.asset(
-                            imagePath,
+                          Image.network(
+                            h.icon,
                             width: 50,
                             height: 50,
                             fit: BoxFit.cover,
@@ -174,7 +171,10 @@ class weather extends StatelessWidget {
                           SizedBox(height: 10),
                           Text(
                             h.time,
-                            style: TextStyle(color: Colors.white, fontSize: 13),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 13,
+                            ),
                           ),
                           Text.rich(
                             TextSpan(

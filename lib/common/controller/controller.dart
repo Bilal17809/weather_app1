@@ -1,18 +1,26 @@
 import 'dart:convert';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../core/routes/routes_name.dart';
 import '../../data/model/curr_model/curr_model.dart';
+import '../../data/model/fu_model/fur_model.dart';
 import '../../data/model/model.dart';
+import '../../data/model/wpaw_model.dart';
 import '../../share_reference/share_reference.dart';
 
 class CityController extends GetxController {
   RxList<Malta> cityList = <Malta>[].obs;
+  RxList<Malta> filteredList = <Malta>[].obs;
+  RxList<Malta> favoriteCities = <Malta>[].obs;
+  RxString lastQuery = ''.obs;
   RxBool loading = true.obs;
   Rx<Malta?> selectedCity = Rx<Malta?>(null);
   RxList<HourlyWeather> hourlyList = <HourlyWeather>[].obs;
-  RxList<HourlyWeather> dailySummaries = <HourlyWeather>[].obs;
+  RxList<DailyForecast> dailylist = <DailyForecast>[].obs;
+  RxList<WeatherDetails>details = <WeatherDetails>[].obs;
 
 
   final String apiKey = '7d7cead5f21da78ea50ea22ff44f5797';
@@ -22,28 +30,29 @@ class CityController extends GetxController {
     super.onInit();
     loadHourlyFromPrefs();
     loadCities().then((_) => restoreSelectedPreview());
+    filterCities('');
+    final city = selectedCity.value;
+    if (city != null) {
+      fetchAllForecast(city.lat, city.lng);
+    } else {
+      print('❌ selectedCity is null');
+    }
   }
 
   /// Set and save selected city preview
   Future<void> setSelectedCity(Malta city) async {
     print("👉 setSelectedCity called with: ${city.city}");
-
     selectedCity.value = city;
 
-    // 🔄 Optionally re-fetch temperature (if not already fetched)
-    city.temperature = await fetchCityTemperature(city.lat, city.lng);
-    print("🌡️ Updated temperature: ${city.temperature}");
+    await fetchAllForecast(city.lat, city.lng);
 
-    // 🌤️ Fetch hourly forecast
-    // await fetchHourlyForecast(city.lat, city.lng);
-
-    // 💾 Save preview
-    CityModel model = CityModel(
+    final model = CityModel(
       city: city.city,
       temperature: city.temperature ?? 0.0,
     );
     await saveCityPreview(model);
   }
+
 
 
 
@@ -81,43 +90,115 @@ class CityController extends GetxController {
     return null;
   }
 
-  // Future<void> fetchHourlyForecast(double lat, double lon) async {
-  //   final url = Uri.parse('http://api.weatherapi.com/v1/forecast.json?key=07e14a15571440079f5110300250407&q=$lat,$lon&days=1&aqi=no&alerts=no',);
-  //   print("📡 Requesting forecast: $url");
-  //
-  //   try {
-  //     final response = await http.get(url);
-  //     print("🌐 Response status: ${response.statusCode}");
-  //
-  //     if (response.statusCode == 200) {
-  //       final data = jsonDecode(response.body);
-  //       final List<dynamic> forecastList =
-  //       data['forecast']?['forecastday']?[0]?['hour'];
-  //
-  //       if (forecastList != null) {
-  //         final items = forecastList.map((e) {
-  //           print("➡️ Parsing hour: ${e['time']}");
-  //           return HourlyWeather.fromJson(e);
-  //         }).toList();
-  //
-  //         hourlyList.value = items;
-  //
-  //         /// ✅ Add this line to compute daily summaries from hourlyList
-  //
-  //         /// ✅ Optionally store hourly data
-  //         await saveHourlyToPrefs();
-  //
-  //         print("✅ Parsed hourlyList with ${items.length} entries");
-  //       } else {
-  //         print("⚠️ Hourly forecast data not found");
-  //       }
-  //     } else {
-  //       print("❌ Forecast API Error: ${response.statusCode}");
-  //     }
-  //   } catch (e) {
-  //     print("❌ Forecast fetch failed: $e");
-  //   }
-  // }
+  Future<void> fetchAllForecast(double lat, double lon) async {
+    final url = Uri.parse(
+      'https://api.weatherapi.com/v1/forecast.json?key=07e14a15571440079f5110300250407&q=$lat,$lon&days=7&aqi=no&alerts=no',
+    );
+
+    try {
+      final response = await http.get(url).timeout(Duration(seconds: 10));
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        // 🌡️ Current temp
+        final temp = data['current']?['temp_c'];
+        if (temp != null) {
+          selectedCity.value?.temperature = (temp as num).toDouble();
+        }
+
+        // ✅ 🧭 Add wind, humidity, pressure, precipitation
+        final windSpeed = data['current']?['wind_kph'];
+        final windDir = data['current']?['wind_dir'];
+        final humidity = data['current']?['humidity'];
+        final pressure = data['current']?['pressure_mb'];
+        final precip = data['current']?['precip_mm'];
+
+        // 🌙 Moonrise and moonset from first forecast day
+        final moonrise = data['forecast']?['forecastday']?[0]?['astro']?['moonrise'];
+        final moonset = data['forecast']?['forecastday']?[0]?['astro']?['moonset'];
+
+        print('🌬️ Wind: $windSpeed kph ($windDir)');
+        print('💧 Humidity: $humidity%');
+        print('🧪 Pressure: $pressure mb');
+        print('🌧️ Precipitation: $precip mm');
+        print('🌙 Moonrise: $moonrise, Moonset: $moonset');
+        final detailsModel = WeatherDetails.fromJson(data);
+        details.assignAll([detailsModel]);
+
+        // ✅ ⏰ Combine hours from all forecast days
+        final List allHours = (data['forecast']?['forecastday'] as List)
+            .expand((day) => day['hour'] as List)
+            .toList();
+
+        final now = DateTime.now();
+
+        final next24 = allHours
+            .where((h) => DateTime.parse(h['time']).toLocal().isAfter(now))
+            .take(24)
+            .map((e) => HourlyWeather.fromJson(e))
+            .toList();
+
+        hourlyList.value = next24;
+        await saveHourlyToPrefs();
+
+        // 📅 Daily forecast
+        final weather = WeatherForecastResponse.fromJson(data);
+        dailylist.value = weather.forecastDays;
+        await saveDailyToPrefs();
+
+        print("✅ Forecast loaded: ${hourlyList.length} hours, ${dailylist.length} days");
+      } else {
+        print("❌ Forecast API error: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("❌ Forecast fetch failed: $e");
+    }
+  }
+
+
+
+  Future<void> saveDailyToPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String> dailyJsonList =
+    dailylist.map((d) => jsonEncode(d.toJson())).toList();
+    await prefs.setStringList('daily_data', dailyJsonList);
+  }
+
+  Future<void> loadDailyFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final List<String>? dailyJsonList = prefs.getStringList('daily_data');
+
+    if (dailyJsonList != null) {
+      final List<DailyForecast> loadedDaily = dailyJsonList
+          .map((jsonStr) => DailyForecast.fromJson(jsonDecode(jsonStr)))
+          .toList();
+      dailylist.assignAll(loadedDaily);
+      print("✅ Loaded ${loadedDaily.length} daily forecasts from SharedPreferences");
+    } else {
+      print("⚠️ No daily data found in SharedPreferences");
+    }
+  }
+  void toggleFavorite(Malta city, BuildContext context) async {
+    city.isFavorite = true;
+
+    // ✅ Save to SharedPreferences
+    final prefs = await SharedPreferences.getInstance();
+    final favs = cityList
+        .where((c) => c.isFavorite)
+        .map((c) => jsonEncode(c.toJson()))
+        .toList();
+    await prefs.setStringList('favorite_cities', favs);
+
+    // ✅ Update lists
+    favoriteCities.value = cityList.where((c) => c.isFavorite).toList();
+    cityList.refresh();
+    filterCities(lastQuery.value);
+
+    // ✅ Navigate to favorite screen
+    Navigator.pushNamed(context, RoutesName.favorite);
+  }
+
 
 
   /// Load cities from JSON and update temperatures
@@ -125,22 +206,55 @@ class CityController extends GetxController {
     loading.value = true;
 
     try {
-      final jsonString = await rootBundle.loadString(
-        'assets/MaltaWeather.json',
-      );
+      // Load JSON file
+      final jsonString = await rootBundle.loadString('assets/MaltaWeather.json');
       final jsonList = json.decode(jsonString) as List;
       final loadedCities = jsonList.map((e) => Malta.fromJson(e)).toList();
 
+      // 🔁 Load saved favorites from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final favs = prefs.getStringList('favorite_cities') ?? [];
+
+      final favoriteNames = favs
+          .map((e) => jsonDecode(e)['city'].toString().toLowerCase())
+          .toList();
+
+      // 🔁 Loop through each city: fetch temp + mark favorite
       for (var city in loadedCities) {
         city.temperature = await fetchCityTemperature(city.lat, city.lng);
-        print("🌡️ Fetched temp for ${city.city}: ${city.temperature}");
+
+        if (favoriteNames.contains(city.city.toLowerCase())) {
+          city.isFavorite = true;
+        }
+
+        print("🌡️ Fetched temp for ${city.city}: ${city.temperature}, "
+            "❤️ Favorite: ${city.isFavorite}");
       }
 
+      // ✅ Set city list and favorite list
       cityList.value = loadedCities;
+      favoriteCities.value = loadedCities.where((c) => c.isFavorite).toList();
+
     } catch (e) {
       print('❌ Error loading cities: $e');
     } finally {
       loading.value = false;
+    }
+  }
+
+  void filterCities(String query) {
+    lastQuery.value = query;
+
+    if (query.trim().isEmpty) {
+      final favs = cityList.where((c) => c.isFavorite).toList();
+      final nonFavs = cityList.where((c) => !c.isFavorite).toList();
+      filteredList.value = [...favs, ...nonFavs];
+    } else {
+      filteredList.value = cityList
+          .where((city) =>
+      !city.isFavorite &&
+          city.city.toLowerCase().contains(query.toLowerCase()))
+          .toList();
     }
   }
 

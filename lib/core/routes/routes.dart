@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:weather/presentation/city/view/select_city.dart';
 import 'package:weather/presentation/weather/view/weather.dart';
 import '../../presentation/city/view/city.dart';
 import '../../presentation/home/view/home_page.dart';
@@ -17,6 +18,8 @@ class Routes {
         return MaterialPageRoute(builder: (_)=>weather());
       case RoutesName.citypage:
         return MaterialPageRoute(builder: (_)=>City());
+      case RoutesName.favorite:
+        return MaterialPageRoute(builder: (_)=>favorite_city());
 
       default:
         return MaterialPageRoute(

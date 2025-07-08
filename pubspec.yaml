@@ -38,6 +38,7 @@ dependencies:
   get: ^4.7.2
   intl: ^0.20.2
   shared_preferences: ^2.5.3
+  timezone: ^0.10.1
 
 
 dev_dependencies:

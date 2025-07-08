@@ -1,17 +1,28 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:weather/core/routes/routes_name.dart';
+import 'package:weather/data/model/model.dart';
 import '../../../common/controller/controller.dart';
 import '../../home/view/home_page.dart';
 import '../../weather/view/weather.dart';
-class City extends StatelessWidget {
+
+class City extends StatefulWidget {
   City({super.key});
+
+  @override
+  State<City> createState() => _CityState();
+}
+
+class _CityState extends State<City> {
   final CityController ctr = Get.put(CityController());
-TextEditingController controller=TextEditingController();
+  final TextEditingController searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -19,19 +30,14 @@ TextEditingController controller=TextEditingController();
         width: double.infinity,
         height: double.infinity,
         decoration: BoxDecoration(
-          // Gradient over image using colorFilter
           image: DecorationImage(
             image: AssetImage("assets/images/weather6.png"),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
-              Color(
-                0xFF00A67D,
-              ).withOpacity(0.68), // Green overlay with 60% opacity
-              BlendMode.srcOver, // Blend mode
+              Color(0xFF00A67D).withOpacity(0.68),
+              BlendMode.srcOver,
             ),
           ),
-
-          // Optional extra gradient (on top of colorFilter)
         ),
         child: Column(
           children: [
@@ -57,14 +63,22 @@ TextEditingController controller=TextEditingController();
                     fontSize: 20,
                   ),
                 ),
+                SizedBox(width: 70,),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: IconButton(onPressed: (){
+                    Navigator.pushNamed(context, RoutesName.favorite);
+                  }, icon: Icon(Icons.favorite_border,color: Colors.white,)),
+                )
               ],
             ),
             SizedBox(height: 15),
             Padding(
               padding: const EdgeInsets.all(12.0),
               child: TextField(
-                controller: controller,
-                style: TextStyle(color: Colors.white),
+                controller: searchController,
+                onChanged: (value) => ctr.filterCities(value),
+                style: TextStyle(color: Colors.black),
                 decoration: InputDecoration(
                   hintText: "Search city...",
                   hintStyle: TextStyle(color: Colors.grey),
@@ -78,18 +92,26 @@ TextEditingController controller=TextEditingController();
                 ),
               ),
             ),
-
             Expanded(
               child: Obx(() {
-                if (ctr.cityList.isEmpty) {
+                if (ctr.loading.value) {
                   return Center(child: CircularProgressIndicator());
+                }
+
+                if (ctr.filteredList.isEmpty) {
+                  return Center(
+                    child: Text(
+                      "No cities found.",
+                      style: TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  );
                 }
 
                 return ListView.builder(
                   padding: EdgeInsets.symmetric(horizontal: 13),
-                  itemCount: ctr.cityList.length,
+                  itemCount: ctr.filteredList.length,
                   itemBuilder: (context, index) {
-                    final city = ctr.cityList[index];
+                    final city = ctr.filteredList[index];
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
                       child: Container(
@@ -115,16 +137,23 @@ TextEditingController controller=TextEditingController();
                           ],
                         ),
                         child: InkWell(
-                          onTap: (){
+                          onTap: () {
                             ctr.setSelectedCity(city);
-                            Navigator.push(context, MaterialPageRoute(builder: (context)=>HomeScreen()));
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => HomeScreen(),
+                              ),
+                            );
                           },
-
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Padding(
-                                padding: const EdgeInsets.only(left: 10, top: 7),
+                                padding: const EdgeInsets.only(
+                                  top: 8.0,
+                                  left: 10,
+                                ),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
@@ -156,59 +185,70 @@ TextEditingController controller=TextEditingController();
                                   ],
                                 ),
                               ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  right: 8.0,
-                                  top: 7,
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Row(
-                                      children: [
-                                        Text.rich(
-                                          TextSpan(
-                                            children: [
-                                              TextSpan(
-                                                text:
-                                                city.temperature != null
-                                                    ? city.temperature!
-                                                    .toStringAsFixed(1)
-                                                    : 'Loading...',
-                                                style: const TextStyle(
-                                                  fontSize: 26,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                              WidgetSpan(
-                                                child: Transform.translate(
-                                                  offset: Offset(2, -10),
-                                                  child: Text(
-                                                    '°',
-                                                    style: TextStyle(
-                                                      fontSize: 20,
-                                                      fontWeight: FontWeight.bold,
-                                                      color: Colors.white,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    Text(
-                                      "null",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
+                           Row(
+                             children: [
+                               Padding(
+                                 padding: const EdgeInsets.only(top: 8.0),
+                                 child: Column(
+                                   children: [
+                                     Row(
+                                       children: [
+                                         Text.rich(
+                                           TextSpan(
+                                             children: [
+                                               TextSpan(
+                                                 text:
+                                                 city.temperature != null
+                                                     ? city.temperature!
+                                                     .toStringAsFixed(1)
+                                                     : 'Loading...',
+                                                 style: const TextStyle(
+                                                   fontSize: 26,
+                                                   fontWeight: FontWeight.bold,
+                                                   color: Colors.white,
+                                                 ),
+                                               ),
+                                               WidgetSpan(
+                                                 child: Transform.translate(
+                                                   offset: Offset(2, -10),
+                                                   child: Text(
+                                                     '°',
+                                                     style: TextStyle(
+                                                       fontSize: 20,
+                                                       fontWeight: FontWeight.bold,
+                                                       color: Colors.white,
+                                                     ),
+                                                   ),
+                                                 ),
+                                               ),
+                                             ],
+                                           ),
+                                         ),
+                                       ],
+                                     ),
+                                     Text(
+                                       "null",
+                                       style: TextStyle(
+                                         color: Colors.white,
+                                         fontSize: 13,
+                                       ),
+                                     ),
+                                   ],
+                                 ),
+                               ),
+                               IconButton(
+                                 icon: Icon(
+                                   city.isFavorite
+                                       ? Icons.favorite
+                                       : Icons.favorite_border,
+                                   color: Colors.white,
+                                 ),
+                                 onPressed: () {
+                                   ctr.toggleFavorite(city,context);
+                                 },
+                               ),
+                             ],
+                           )
                             ],
                           ),
                         ),
