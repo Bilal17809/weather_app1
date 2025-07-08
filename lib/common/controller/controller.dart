@@ -35,7 +35,7 @@ class CityController extends GetxController {
     print("🌡️ Updated temperature: ${city.temperature}");
 
     // 🌤️ Fetch hourly forecast
-    await fetchHourlyForecast(city.lat, city.lng);
+    // await fetchHourlyForecast(city.lat, city.lng);
 
     // 💾 Save preview
     CityModel model = CityModel(
@@ -81,43 +81,43 @@ class CityController extends GetxController {
     return null;
   }
 
-  Future<void> fetchHourlyForecast(double lat, double lon) async {
-    final url = Uri.parse('http://api.weatherapi.com/v1/forecast.json?key=07e14a15571440079f5110300250407&q=$lat,$lon&days=1&aqi=no&alerts=no',);
-    print("📡 Requesting forecast: $url");
-
-    try {
-      final response = await http.get(url);
-      print("🌐 Response status: ${response.statusCode}");
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final List<dynamic> forecastList =
-        data['forecast']?['forecastday']?[0]?['hour'];
-
-        if (forecastList != null) {
-          final items = forecastList.map((e) {
-            print("➡️ Parsing hour: ${e['time']}");
-            return HourlyWeather.fromJson(e);
-          }).toList();
-
-          hourlyList.value = items;
-
-          /// ✅ Add this line to compute daily summaries from hourlyList
-
-          /// ✅ Optionally store hourly data
-          await saveHourlyToPrefs();
-
-          print("✅ Parsed hourlyList with ${items.length} entries");
-        } else {
-          print("⚠️ Hourly forecast data not found");
-        }
-      } else {
-        print("❌ Forecast API Error: ${response.statusCode}");
-      }
-    } catch (e) {
-      print("❌ Forecast fetch failed: $e");
-    }
-  }
+  // Future<void> fetchHourlyForecast(double lat, double lon) async {
+  //   final url = Uri.parse('http://api.weatherapi.com/v1/forecast.json?key=07e14a15571440079f5110300250407&q=$lat,$lon&days=1&aqi=no&alerts=no',);
+  //   print("📡 Requesting forecast: $url");
+  //
+  //   try {
+  //     final response = await http.get(url);
+  //     print("🌐 Response status: ${response.statusCode}");
+  //
+  //     if (response.statusCode == 200) {
+  //       final data = jsonDecode(response.body);
+  //       final List<dynamic> forecastList =
+  //       data['forecast']?['forecastday']?[0]?['hour'];
+  //
+  //       if (forecastList != null) {
+  //         final items = forecastList.map((e) {
+  //           print("➡️ Parsing hour: ${e['time']}");
+  //           return HourlyWeather.fromJson(e);
+  //         }).toList();
+  //
+  //         hourlyList.value = items;
+  //
+  //         /// ✅ Add this line to compute daily summaries from hourlyList
+  //
+  //         /// ✅ Optionally store hourly data
+  //         await saveHourlyToPrefs();
+  //
+  //         print("✅ Parsed hourlyList with ${items.length} entries");
+  //       } else {
+  //         print("⚠️ Hourly forecast data not found");
+  //       }
+  //     } else {
+  //       print("❌ Forecast API Error: ${response.statusCode}");
+  //     }
+  //   } catch (e) {
+  //     print("❌ Forecast fetch failed: $e");
+  //   }
+  // }
 
 
   /// Load cities from JSON and update temperatures

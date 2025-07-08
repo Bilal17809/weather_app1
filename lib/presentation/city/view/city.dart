@@ -11,7 +11,7 @@ import '../../weather/view/weather.dart';
 class City extends StatelessWidget {
   City({super.key});
   final CityController ctr = Get.put(CityController());
-
+TextEditingController controller=TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,6 +60,25 @@ class City extends StatelessWidget {
               ],
             ),
             SizedBox(height: 15),
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: TextField(
+                controller: controller,
+                style: TextStyle(color: Colors.white),
+                decoration: InputDecoration(
+                  hintText: "Search city...",
+                  hintStyle: TextStyle(color: Colors.grey),
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon: Icon(Icons.search, color: Color(0xFF009B78)),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+              ),
+            ),
+
             Expanded(
               child: Obx(() {
                 if (ctr.cityList.isEmpty) {
