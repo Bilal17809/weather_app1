@@ -4,6 +4,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 
 import '../../../common/controller/controller.dart';
+import '../../../core/routes/routes_name.dart';
 import '../../city/contrl/city_contrl.dart';
 import '../../city/view/city.dart';
 
@@ -27,7 +28,6 @@ class weather extends StatelessWidget {
             children: [
               Align(
                 alignment: Alignment.topLeft,
-                child: Icon(Icons.menu, color: Colors.white, size: 28),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -58,10 +58,7 @@ class weather extends StatelessWidget {
                 alignment: Alignment.topLeft,
                 child: InkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => City()),
-                    );
+                    Navigator.pushNamed(context, RoutesName.citypage);
                   },
                   child: Icon(
                     Icons.add_circle_sharp,

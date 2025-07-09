@@ -1,29 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:weather/presentation/home/view/home_page.dart';
+
 import '../../../common/controller/controller.dart';
-import '../../home/view/home_page.dart';
-// Replace with your actual HomeScreen import
+import '../../../core/routes/routes_name.dart';
 
-class CityScreen extends StatefulWidget {
-  @override
-  State<CityScreen> createState() => _CityScreenState();
-}
 
-class _CityScreenState extends State<CityScreen> {
-  final CityController ctr = Get.find();
+class FavoriteCity extends StatelessWidget {
+  const FavoriteCity({super.key});
 
-  final TextEditingController searchController = TextEditingController();
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ctr.filterCities('');
-    });
-  }
   @override
   Widget build(BuildContext context) {
+    final CityController ctr = Get.find();
+
     return Scaffold(
       body: Container(
+        width: double.infinity,
+        height: double.infinity,
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage("assets/images/weather6.png"),
@@ -36,95 +30,87 @@ class _CityScreenState extends State<CityScreen> {
         ),
         child: Column(
           children: [
-            // Row(
-            //   children: [
-            //     IconButton(onPressed: (){
-            //
-            //     }, icon: Icon(Icons.arrow_back,color: Colors.white,)),
-            //     Text(
-            //       'Select a City',
-            //       style: TextStyle(color: Colors.white),
-            //     ),
-            //   ],
-            // ),
-            // 🔍 Search Bar
-            SizedBox(height: 50,),
-            Padding(
-              padding: const EdgeInsets.all(12.0),
-              child: TextField(
-                controller: searchController,
-                onChanged: (value) => ctr.filterCities(value),
-                style: TextStyle(color: Colors.black),
-                decoration: InputDecoration(
-                  hintText: "Search city...",
-                  hintStyle: TextStyle(color: Colors.grey),
-                  filled: true,
-                  fillColor: Colors.white,
-                  prefixIcon: Icon(Icons.search, color: Color(0xFF009B78)),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide.none,
+            SizedBox(height: 40),
+            Row(
+              children: [
+                SizedBox(width: 20),
+                InkWell(
+                  onTap: () {
+                    Navigator.pushNamed(context, RoutesName.citypage);
+                  },
+                  child: Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                ),
+                SizedBox(width: 60),
+                Text(
+                  "Favorite cities",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
                   ),
                 ),
-              ),
+                SizedBox(width: 70),
+                Align(
+                  alignment: Alignment.topRight,
+                  child: IconButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, RoutesName.citypage);
+                    },
+                    icon: Icon(
+                      Icons.add_circle_sharp,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                ),
+              ],
             ),
+            SizedBox(height: 10),
 
-            // 📋 City List
+            // ✅ Fix: Wrap ListView.builder with Expanded
             Expanded(
               child: Obx(() {
-                if (ctr.loading.value) {
-                  return Center(child: CircularProgressIndicator());
-                }
-
-                if (ctr.filteredList.isEmpty) {
+                if (ctr.favoriteCities.isEmpty) {
                   return Center(
                     child: Text(
-                      "No cities found.",
+                      "No favorites yet",
                       style: TextStyle(color: Colors.white, fontSize: 16),
                     ),
                   );
                 }
 
-                return ListView.builder(
-                  padding: EdgeInsets.symmetric(horizontal: 13),
-                  itemCount: ctr.filteredList.length,
-                  itemBuilder: (context, index) {
-                    final city = ctr.filteredList[index];
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: Container(
-                        height: 70,
+                return Expanded(
+                  child: ListView.builder(
+                    itemCount: ctr.favoriteCities.length,
+                    itemBuilder: (context, index) {
+                      final city = ctr.favoriteCities[index];
+                      return Container(
+                        margin: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 20,
+                        ),
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              Color(0xFF00A67D),
-                              Color(0xFF009072),
-                              Color(0xFF02493F),
-                            ],
-                          ),
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white, width: 1),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.2),
-                              spreadRadius: 2,
-                              blurRadius: 6,
-                              offset: Offset(4, 4),
+                              blurRadius: 5,
+                              offset: Offset(2, 4),
                             ),
                           ],
-                          border: city.isFavorite
-                              ? Border.all(color: Colors.white, width: 1.0) // ✅ White border for favorites
-                              : null, // No border for non-favorites
                         ),
                         child: InkWell(
                           onTap: () {
                             ctr.setSelectedCity(city);
                             Navigator.push(
                               context,
-                              MaterialPageRoute(
-                                builder: (context) => HomeScreen(),
-                              ),
+                              MaterialPageRoute(builder: (_) => HomeScreen()),
                             );
                           },
                           child: Row(
@@ -223,25 +209,22 @@ class _CityScreenState extends State<CityScreen> {
                                   IconButton(
                                     icon: Icon(
                                       city.isFavorite
-                                      ? Icons.add_circle_sharp
-                                      : Icons.add,
+                                          ? Icons.favorite
+                                          : Icons.favorite_border,
                                       color: Colors.white,
                                     ),
                                     onPressed: () {
-                                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                                        ctr.toggleFavorite(city, context);
-                                      });
+                                      ctr.toggleFavorite(city, context);
                                     },
                                   ),
-
                                 ],
                               ),
                             ],
                           ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 );
               }),
             ),

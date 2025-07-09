@@ -17,9 +17,9 @@ class Routes {
       case RoutesName.weatherpage:
         return MaterialPageRoute(builder: (_)=>weather());
       case RoutesName.citypage:
-        return MaterialPageRoute(builder: (_)=>City());
+        return MaterialPageRoute(builder: (_)=>CityScreen());
       case RoutesName.favorite:
-        return MaterialPageRoute(builder: (_)=>favorite_city());
+        return MaterialPageRoute(builder: (_)=>FavoriteCity());
 
       default:
         return MaterialPageRoute(

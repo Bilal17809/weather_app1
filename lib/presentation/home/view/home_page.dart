@@ -61,7 +61,7 @@ class HomeScreen extends StatelessWidget {
                 alignment: Alignment.topLeft,
                 child: InkWell(
                   onTap: () {
-                    Navigator.pushNamed(context, RoutesName.citypage);
+                    Navigator.pushNamed(context, RoutesName.favorite);
                   },
                   child: Icon(
                     Icons.add_circle_sharp,
@@ -75,6 +75,8 @@ class HomeScreen extends StatelessWidget {
         }),
       ),
       body: Container(
+        height:double.infinity,
+        width: double.infinity,
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
@@ -114,12 +116,12 @@ class HomeScreen extends StatelessWidget {
                     city?.temperature != null
                         ? "${city!.temperature!.toStringAsFixed(1)}°"
                         : "Loading...",
-                    style: TextStyle(fontSize: 80, color: Colors.white),
+                    style: TextStyle(fontSize: 50, color: Colors.white),
                   );
                 }),
 
                 Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10),
+                  padding: const EdgeInsets.only(left: 10,right: 10),
                   child: Container(
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
@@ -136,12 +138,11 @@ class HomeScreen extends StatelessWidget {
                     child: Obx(() {
                       final hourly = Get.find<CityController>().hourlyList;
 
+                      print("📦 UI rebuilding — Hourly count: ${hourly.length}");
 
                       if (hourly.isEmpty) {
                         return Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFF00A67D),
-                          ),
+                          child: Text("❌ No hourly forecast", style: TextStyle(color: Colors.white)),
                         );
                       }
 
@@ -150,53 +151,25 @@ class HomeScreen extends StatelessWidget {
                         child: Row(
                           children: List.generate(5, (index) {
                             final h = hourly[index];
-                            final imagePath =
-                                assetPaths[index %
-                                    assetPaths.length]; // Safe fallback
-
                             return Padding(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                              ),
+                              padding: const EdgeInsets.only(left: 14, bottom: 10),
                               child: Column(
                                 children: [
                                   SizedBox(height: 9),
-                                  Image.network(
-                                    h.icon,
-                                    width: 50,
-                                    height: 50,
-                                    fit: BoxFit.cover,
-                                  ),
+                                  Image.network(h.icon, width: 53, height: 53, fit: BoxFit.cover),
                                   SizedBox(height: 10),
-                                  Text(
-                                    h.time,
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                    ),
-                                  ),
+                                  Text(h.time, style: TextStyle(color: Colors.white, fontSize: 13)),
                                   Text.rich(
                                     TextSpan(
                                       children: [
                                         TextSpan(
                                           text: "${h.temperature.round()}",
-                                          style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
+                                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
                                         ),
                                         WidgetSpan(
                                           child: Transform.translate(
                                             offset: const Offset(2, 1),
-                                            child: Text(
-                                              '°',
-                                              style: TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                              ),
-                                            ),
+                                            child: Text('°', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
                                           ),
                                         ),
                                       ],
@@ -209,6 +182,8 @@ class HomeScreen extends StatelessWidget {
                         ),
                       );
                     }),
+
+
                   ),
                 ),
                 SizedBox(height: 10),
@@ -217,10 +192,11 @@ class HomeScreen extends StatelessWidget {
                   child: Container(
                     child: Obx(() {
                       final controller = Get.find<CityController>();
-                      final hourly = controller.hourlyList;
                       final daily = controller.dailylist;
 
-                      if (hourly.length < 7 || daily.length < 7) {
+                      print("📅 Daily forecast items: ${daily.length}"); // ✅ Debug log
+
+                      if (daily.isEmpty) {
                         return Center(
                           child: Text(
                             "⚠️ Forecast data not available.",
@@ -232,17 +208,14 @@ class HomeScreen extends StatelessWidget {
                       return SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
-                          children: List.generate(7, (index) {
-                            final h = hourly[index];
+                          children: List.generate(daily.length.clamp(0, 7), (index) {
                             final w = daily[index];
-                            final imagePath = assetPaths[index % assetPaths.length];
-
                             return InkWell(
                               onTap: () {
                                 Navigator.pushNamed(context, RoutesName.weatherpage);
                               },
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                padding: const EdgeInsets.symmetric(horizontal: 6),
                                 child: Column(
                                   children: [
                                     SizedBox(height: 9),
@@ -330,6 +303,7 @@ class HomeScreen extends StatelessWidget {
 
                   ),
                 ),
+
               ],
             ),
           ),
