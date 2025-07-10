@@ -58,7 +58,7 @@ class weather extends StatelessWidget {
                 alignment: Alignment.topLeft,
                 child: InkWell(
                   onTap: () {
-                    Navigator.pushNamed(context, RoutesName.citypage);
+                    Navigator.pushNamed(context, RoutesName.favorite);
                   },
                   child: Icon(
                     Icons.add_circle_sharp,
@@ -108,7 +108,7 @@ class weather extends StatelessWidget {
               padding: const EdgeInsets.only(left: 50,right: 30),
               child:Obx(() {
                 final detail = Get.find<CityController>().details;
-                if (detail.isEmpty) return Center(child: Text("c", style: TextStyle(color: Colors.white)));
+                if (detail.isEmpty) return Center(child: Text("no data", style: TextStyle(color: Colors.white)));
 
                 final d = detail.first; // just show first entry's details
 

@@ -39,6 +39,8 @@ dependencies:
   intl: ^0.20.2
   shared_preferences: ^2.5.3
   timezone: ^0.10.1
+  flutter_spinkit: ^5.2.1
+  loading_animations: ^2.2.0
 
 
 dev_dependencies:

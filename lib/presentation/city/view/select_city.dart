@@ -219,7 +219,7 @@ class _FavoriteCityState extends State<FavoriteCity> {
                                                     ),
                                                     WidgetSpan(
                                                       child: Transform.translate(
-                                                        offset: Offset(2, -10),
+                                                        offset: Offset(2, 1),
                                                         child: Text(
                                                           '°',
                                                           style: TextStyle(
