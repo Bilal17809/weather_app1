@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../common/controller/controller.dart';
+import '../../../core/common/controller/controller.dart';
 import '../../home/view/home_page.dart';
 // Replace with your actual HomeScreen import
 
@@ -228,9 +228,9 @@ class _CityScreenState extends State<CityScreen> {
                                       color: Colors.white,
                                     ),
                                     onPressed: () {
-                                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                                        ctr.toggleFavorite(city, context);
-                                      });
+                                      // WidgetsBinding.instance.addPostFrameCallback((_) {
+                                      //   ctr.toggleFavorite(city, context);
+                                      // });
                                     },
                                   ),
 

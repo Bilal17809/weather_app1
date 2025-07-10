@@ -11,7 +11,7 @@ class Malta {
   final int? population;
   final int id;
   double? temperature;
-  bool isFavorite; // ✅ NEW
+  bool isFavorite;
 
   Malta({
     required this.city,
@@ -28,6 +28,7 @@ class Malta {
     this.temperature,
     this.isFavorite = false,
   });
+
 
   factory Malta.fromJson(Map<String, dynamic> json) {
     return Malta(

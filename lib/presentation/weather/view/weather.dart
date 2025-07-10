@@ -2,11 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
-
-import '../../../common/controller/controller.dart';
+import 'package:weather/presentation/hourly_forecast/contrl/hourly_contrl.dart';
+import '../../../core/common/controller/controller.dart' show CityController;
 import '../../../core/routes/routes_name.dart';
-import '../../city/contrl/city_contrl.dart';
-import '../../city/view/city.dart';
 
 class weather extends StatelessWidget {
   weather({super.key});
@@ -134,7 +132,7 @@ class weather extends StatelessWidget {
               thickness: 1,          // Line thickness
             ),
             Obx(() {
-              final hourly = Get.find<CityController>().hourlyList;
+              final hourly = Get.find<HourlyForecastController>().hourlyList;
 
 
               if (hourly.isEmpty) {

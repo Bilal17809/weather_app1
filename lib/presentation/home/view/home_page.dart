@@ -4,10 +4,10 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:weather/core/routes/routes_name.dart';
-
-import '../../../common/controller/controller.dart';
-
-import '../../../lists/icon_list.dart';
+import 'package:weather/data/model/hourly_model.dart';
+import '../../../core/common/controller/controller.dart';
+import '../../daily_forecast/contrl/daily_contrl.dart';
+import '../../hourly_forecast/contrl/hourly_contrl.dart';
 
 
 class HomeScreen extends StatelessWidget {
@@ -99,11 +99,11 @@ class HomeScreen extends StatelessWidget {
                 SizedBox(height: 15),
                 Image.asset(
                   "assets/images/Frame .png",
-                  width: 160, // set your desired width
-                  height: 120, // set your desired height
+                  width: 160,
+                  height: 120,
                   fit:
                       BoxFit
-                          .cover, // optional, defines how the image should be fitted
+                          .cover,
                 ),
                 SizedBox(height: 10),
                 Text(
@@ -136,7 +136,7 @@ class HomeScreen extends StatelessWidget {
                       ],
                     ),
                     child: Obx(() {
-                      final hourly = Get.find<CityController>().hourlyList;
+                      final hourly = Get.find<HourlyForecastController>().hourlyList;
 
                       print("📦 UI rebuilding — Hourly count: ${hourly.length}");
 
@@ -191,8 +191,8 @@ class HomeScreen extends StatelessWidget {
                   padding: const EdgeInsets.only(left: 10, right: 10),
                   child: Container(
                     child: Obx(() {
-                      final controller = Get.find<CityController>();
-                      final daily = controller.dailylist;
+                      final controller = Get.find<DailyForecastController>();
+                      final daily = controller.dailyList;
 
                       print("📅 Daily forecast items: ${daily.length}"); // ✅ Debug log
 

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-
-import '../../../common/controller/controller.dart';
+import '../../../core/common/controller/controller.dart';
 import '../../../core/routes/routes_name.dart';
 import '../../home/view/home_page.dart';
 
@@ -237,7 +236,7 @@ class _FavoriteCityState extends State<FavoriteCity> {
                                             ],
                                           ),
                                           Text(
-                                            "null", // You can show condition or city.state etc.
+                                            "null",
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 13,
@@ -254,7 +253,7 @@ class _FavoriteCityState extends State<FavoriteCity> {
                                         color: Colors.white,
                                       ),
                                       onPressed: () {
-                                        ctr.toggleFavorite(city, context);
+                                        // ctr.toggleFavorite(city, context);
                                       },
                                     ),
                                   ],

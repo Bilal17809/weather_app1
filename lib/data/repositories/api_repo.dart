@@ -1,5 +1,4 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
 Future<double?> fetchCityTemperature(double lat, double lon) async {

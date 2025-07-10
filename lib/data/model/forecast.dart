@@ -19,7 +19,6 @@ class DailyForecast {
     required this.iconUrl,
   });
 
-  // ✅ From Weather API
   factory DailyForecast.fromJson(Map<String, dynamic> json) {
     final parsedDate = DateTime.parse(json['date']);
     return DailyForecast(
@@ -33,7 +32,7 @@ class DailyForecast {
     );
   }
 
-  // ✅ From SharedPreferences
+
   factory DailyForecast.fromFlatJson(Map<String, dynamic> json) {
     return DailyForecast(
       date: json['date'],
@@ -46,7 +45,6 @@ class DailyForecast {
     );
   }
 
-  // ✅ To SharedPreferences
   Map<String, dynamic> toJson() {
     return {
       'date': date,
@@ -59,3 +57,4 @@ class DailyForecast {
     };
   }
 }
+
