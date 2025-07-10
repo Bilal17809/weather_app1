@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../common/controller/controller.dart';
+import '../../../core/common/controller/controller.dart';
+import '../../favrt_city/controller/favt_controller.dart';
 import '../../home/view/home_page.dart';
 // Replace with your actual HomeScreen import
 
@@ -11,7 +12,7 @@ class CityScreen extends StatefulWidget {
 
 class _CityScreenState extends State<CityScreen> {
   final CityController ctr = Get.find();
-
+  final favController = Get.put(FavoriteController());
   final TextEditingController searchController = TextEditingController();
   @override
   void initState() {
@@ -229,7 +230,7 @@ class _CityScreenState extends State<CityScreen> {
                                     ),
                                     onPressed: () {
                                       WidgetsBinding.instance.addPostFrameCallback((_) {
-                                        ctr.toggleFavorite(city, context);
+                                        favController.toggleFavorite(city);
                                       });
                                     },
                                   ),

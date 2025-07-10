@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
-
-import '../../../common/controller/controller.dart';
+import 'package:weather/presentation/hourly_forecast/contrl/hourly_contrl.dart';
+import 'package:weather/presentation/weather/view/w_forter.dart';
+import '../../../core/common/controller/controller.dart' show CityController;
 import '../../../core/routes/routes_name.dart';
-import '../../city/contrl/city_contrl.dart';
-import '../../city/view/city.dart';
 
 class weather extends StatelessWidget {
   weather({super.key});
@@ -133,80 +132,7 @@ class weather extends StatelessWidget {
               color: Colors.grey,    // Line color
               thickness: 1,          // Line thickness
             ),
-            Obx(() {
-              final hourly = Get.find<CityController>().hourlyList;
-
-
-              if (hourly.isEmpty) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFF00A67D),
-                  ),
-                );
-              }
-
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: List.generate(5, (index) {
-                    final h = hourly[index];
-                  // Safe fallback
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                      ),
-                      child: Column(
-                        children: [
-                          SizedBox(height: 9),
-                          Image.network(
-                            h.icon,
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            h.time,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                            ),
-                          ),
-                          Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: "${h.temperature.round()}",
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                WidgetSpan(
-                                  child: Transform.translate(
-                                    offset: const Offset(2, 1),
-                                    child: Text(
-                                      '°',
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ),
-              );
-            }),
+            Weather_forter(),
             SizedBox(height: 10),
 
           ],

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
-
-import '../../../common/controller/controller.dart';
+import '../../../core/common/controller/controller.dart';
 import '../../../core/routes/routes_name.dart';
 import '../../home/view/home_page.dart';
+import '../controller/favt_controller.dart';
 
 class FavoriteCity extends StatefulWidget {
   const FavoriteCity({super.key});
@@ -16,7 +16,7 @@ class FavoriteCity extends StatefulWidget {
 class _FavoriteCityState extends State<FavoriteCity> {
   final CityController ctr = Get.find();
   final TextEditingController searchController = TextEditingController();
-
+  final favController = Get.find<FavoriteController>();
   void initState() {
     super.initState();
 
@@ -116,9 +116,9 @@ class _FavoriteCityState extends State<FavoriteCity> {
 
                 return Expanded(
                   child: ListView.builder(
-                    itemCount: ctr.filteredFavoriteCities.length,
+                    itemCount: favController.filteredFavoriteCities.length,
                     itemBuilder: (context, index) {
-                      final city = ctr.filteredFavoriteCities[index];
+                      final city = favController.filteredFavoriteCities[index];
 
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12,left: 10,right: 10),
@@ -237,7 +237,7 @@ class _FavoriteCityState extends State<FavoriteCity> {
                                             ],
                                           ),
                                           Text(
-                                            "null", // You can show condition or city.state etc.
+                                            "null",
                                             style: TextStyle(
                                               color: Colors.white,
                                               fontSize: 13,
@@ -254,7 +254,7 @@ class _FavoriteCityState extends State<FavoriteCity> {
                                         color: Colors.white,
                                       ),
                                       onPressed: () {
-                                        ctr.toggleFavorite(city, context);
+                                        favController.toggleFavorite(city);
                                       },
                                     ),
                                   ],
