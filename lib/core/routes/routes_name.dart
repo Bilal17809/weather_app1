@@ -5,5 +5,5 @@ class RoutesName {
   static const String weatherpage='weather';
   static const String citypage='City';
   static const String favorite='favorite_city';
-  // static const String aiDictionaryPage = 'aiDictionary_page';
+
 }

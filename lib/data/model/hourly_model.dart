@@ -11,7 +11,7 @@ class HourlyWeather {
     required this.icon,
   });
 
-  /// ✅ From API JSON (WeatherAPI)
+  /// ✅ From WeatherAPI format
   factory HourlyWeather.fromJson(Map<String, dynamic> json) {
     final dateTime = DateTime.parse(json['time']);
     return HourlyWeather(
@@ -21,16 +21,16 @@ class HourlyWeather {
     );
   }
 
-  // /// ✅ From SharedPreferences (flat JSON)
-  // factory HourlyWeather.fromFlatJson(Map<String, dynamic> json) {
-  //   return HourlyWeather(
-  //     time: json['time'],
-  //     temperature: (json['temperature'] as num).toDouble(),
-  //     icon: json['icon'],
-  //   );
-  // }
+  /// ✅ From SharedPreferences
+  factory HourlyWeather.fromFlatJson(Map<String, dynamic> json) {
+    return HourlyWeather(
+      time: json['time'],
+      temperature: (json['temperature'] as num).toDouble(),
+      icon: json['icon'],
+    );
+  }
 
-  /// ✅ For saving to SharedPreferences
+  /// ✅ For SharedPreferences
   Map<String, dynamic> toJson() {
     return {
       'time': time,
