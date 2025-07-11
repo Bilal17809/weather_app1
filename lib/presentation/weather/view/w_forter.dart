@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../hourly_forecast/contrl/hourly_contrl.dart';
 
 class Weather_forter extends StatefulWidget {
@@ -23,7 +24,7 @@ class _Weather_forterState extends State<Weather_forter> {
       if (hourly.isEmpty) {
         return Center(
           child: CircularProgressIndicator(
-            color: Color(0xFF00A67D),
+            color: bgPrimary,
           ),
         );
       }
@@ -51,8 +52,8 @@ class _Weather_forterState extends State<Weather_forter> {
                   SizedBox(height: 10),
                   Text(
                     h.time,
-                    style: TextStyle(
-                      color: Colors.white,
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      color: kWhite,
                       fontSize: 13,
                     ),
                   ),
@@ -61,10 +62,10 @@ class _Weather_forterState extends State<Weather_forter> {
                       children: [
                         TextSpan(
                           text: "${h.temperature.round()}",
-                          style: TextStyle(
+                          style: context.textTheme.bodyLarge?.copyWith(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: kWhite,
                           ),
                         ),
                         WidgetSpan(
@@ -72,10 +73,10 @@ class _Weather_forterState extends State<Weather_forter> {
                             offset: const Offset(2, 1),
                             child: Text(
                               '°',
-                              style: TextStyle(
+                              style: context.textTheme.bodyLarge?.copyWith(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                                color: kWhite,
                               ),
                             ),
                           ),

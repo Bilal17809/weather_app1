@@ -7,7 +7,6 @@ import '../../../data/model/hourly_model.dart';
 class HourlyForecastController extends GetxController {
   RxList<HourlyWeather> hourlyList = <HourlyWeather>[].obs;
 
-  final String apiKey = '7d7cead5f21da78ea50ea22ff44f5797';
 
   @override
   void onInit() {
@@ -20,7 +19,7 @@ class HourlyForecastController extends GetxController {
     print("📡 fetchHourlyForecast() called for $lat, $lng");
 
     final url = Uri.parse(
-      'http://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=$lat,$lng&days=2&aqi=no&alerts=no',
+      'http://api.weatherapi.com/v1/forecast.json?key=07e14a15571440079f5110300250407&q=$lat,$lng&days=7&aqi=no&alerts=no',
     );
 
     try {

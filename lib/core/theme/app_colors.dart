@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 // Whites
@@ -16,7 +18,7 @@ const Color greyColor = Color(0xff626262);
 
 //green
 const greenColor = Color(0xff00AB3F);
-
+const Color orangeYellow = Color(0xFFF19C1E);
 //red
 const kRed = Color(0xffE1020A);
 const kLightRed = Color(0xffF9DEDF);
@@ -46,8 +48,12 @@ const skyBorderColor = Color(0xFF569CD4);
 const Color suffixIconColor = Color(0xff8E8E8E);
 const Color greyBorderColor = Color(0xffADADAD);
 const Color dividerColor = Color(0xffEDEDED);
-
-
+const Color bgDark2 = Color(0xFF001B31);
+const Color bgDark = Color(0xFF02493F);
+const Color bgPrimary = Color(0xFF00A67D);
+const Color bgSecondary = Color(0xFF009072);
+const Color sreachbarcol=Color(0xFF009B78);
+const Color horlyrow=Color(0xFF85DFC7);
 // use below
 const kLightGreen1 = Color(0xFFE8F5E9);
 const kMediumGreen1 = Color(0xFF81C784);

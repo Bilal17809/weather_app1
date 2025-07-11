@@ -6,6 +6,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 
 import '../../../core/routes/routes_name.dart';
+import '../../../core/theme/app_colors.dart';
 import '../contrl/daily_contrl.dart';
 
 class DailyCastPage extends StatelessWidget {
@@ -26,7 +27,7 @@ class DailyCastPage extends StatelessWidget {
             return Center(
               child: Text(
                 "⚠️ Forecast data not available.",
-                style: TextStyle(color: Colors.white, fontSize: 16),
+                style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 16),
               ),
             );
           }
@@ -51,14 +52,14 @@ class DailyCastPage extends StatelessWidget {
                           height: 70,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) =>
-                              Icon(Icons.error, color: Colors.red),
+                              Icon(Icons.error, color: kRed),
                         ),
                         SizedBox(height: 10),
                         Text(
                           w.dayName,
-                          style: TextStyle(
+                          style: context.textTheme.bodyLarge?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                            color: kWhite,
                             fontSize: 14,
                           ),
                         ),
@@ -68,7 +69,7 @@ class DailyCastPage extends StatelessWidget {
                             children: [
                               TextSpan(
                                 text: "${w.maxTemp.round()}",
-                                style: TextStyle(
+                                style: context.textTheme.bodyLarge?.copyWith(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
                                   color: Color(0xFF01474E),
@@ -79,7 +80,7 @@ class DailyCastPage extends StatelessWidget {
                                   offset: Offset(2, 1),
                                   child: Text(
                                     '°',
-                                    style: TextStyle(
+                                    style: context.textTheme.bodyLarge?.copyWith(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
                                       color: Color(0xFF01474E),
@@ -95,10 +96,10 @@ class DailyCastPage extends StatelessWidget {
                             children: [
                               TextSpan(
                                 text: "${w.minTemp.round()}",
-                                style: TextStyle(
+                                style: context.textTheme.bodyLarge?.copyWith(
                                   fontSize: 20,
                                   fontWeight: FontWeight.bold,
-                                  color: Colors.white,
+                                  color: kWhite,
                                 ),
                               ),
                               WidgetSpan(
@@ -106,10 +107,10 @@ class DailyCastPage extends StatelessWidget {
                                   offset: Offset(2, 1),
                                   child: Text(
                                     '°',
-                                    style: TextStyle(
+                                    style: context.textTheme.bodyLarge?.copyWith(
                                       fontSize: 20,
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.white,
+                                      color: kWhite,
                                     ),
                                   ),
                                 ),

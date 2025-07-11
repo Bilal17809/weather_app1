@@ -21,4 +21,5 @@ class Controller extends GetxController {
     final List<dynamic> jsonData = json.decode(jsonString);
     cityList.value = jsonData.map((e) => Malta.fromJson(e)).toList();
   }
+
 }

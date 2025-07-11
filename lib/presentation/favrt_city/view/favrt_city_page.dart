@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import '../../../core/common/controller/controller.dart';
+import '../../../core/common_widgets/textform_field.dart';
 import '../../../core/routes/routes_name.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_styles.dart';
 import '../../home/view/home_page.dart';
 import '../controller/favt_controller.dart';
 
@@ -34,16 +37,7 @@ class _FavoriteCityState extends State<FavoriteCity> {
       body: Container(
         width: double.infinity,
         height: double.infinity,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage("assets/images/weather6.png"),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Color(0xFF00A67D).withOpacity(0.68),
-              BlendMode.srcOver,
-            ),
-          ),
-        ),
+        decoration: imagebg,
         child: Column(
           children: [
             SizedBox(height: 40),
@@ -54,18 +48,23 @@ class _FavoriteCityState extends State<FavoriteCity> {
                   onTap: () {
                     Navigator.pushNamed(context, RoutesName.homePage);
                   },
-                  child: Icon(Icons.arrow_back, color: Colors.white, size: 30),
+                  child: Icon(Icons.arrow_back, color: kWhite, size: 30),
                 ),
                 SizedBox(width: 60),
                 Text(
                   "Favorite cities",
-                  style: TextStyle(
-                    color: Colors.white,
+                  style:context.textTheme.bodyLarge?.copyWith(
+                    color: kWhite,
                     fontWeight: FontWeight.bold,
                     fontSize: 20,
-                  ),
+                  )
+                  // TextStyle(
+                  //   color: kWhite,
+                  //   fontWeight: FontWeight.bold,
+                  //   fontSize: 20,
+                  // ),
                 ),
-                SizedBox(width: 70),
+                SizedBox(width: 68),
                 Align(
                   alignment: Alignment.topRight,
                   child: IconButton(
@@ -74,201 +73,202 @@ class _FavoriteCityState extends State<FavoriteCity> {
                     },
                     icon: Icon(
                       Icons.add_circle_sharp,
-                      color: Colors.white,
+                      color: kWhite,
                       size: 28,
                     ),
                   ),
                 ),
+
               ],
             ),
             SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.only(left: 10,right: 10),
-              child: TextField(
+              child: CustomTextFormField(
+                hintText: "Search city...",
                 controller: searchController,
-                onChanged:  (value) => ctr.filterFavoriteCities(value),
-                style: TextStyle(color: Colors.black),
-                decoration: InputDecoration(
-                  hintText: "Search city...",
-                  hintStyle: TextStyle(color: Colors.grey),
-                  filled: true,
-                  fillColor: Colors.white,
-                  prefixIcon: Icon(Icons.search, color: Color(0xFF009B78)),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide.none,
-                  ),
+                onChanged: (value) => ctr.filterFavoriteCities(value),
+                style: TextStyle(color: blackTextColor),
+                fillColor: kWhite,
+                prefixIcon: Icon(Icons.search, color: sreachbarcol),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(50),
+                  borderSide: BorderSide.none,
                 ),
-              ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide.none,
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(20),
+                  borderSide: BorderSide(color: bgPrimary),
+                ),
+
+              )
+
             ),
 
             // ✅ Fix: Wrap ListView.builder with Expanded
             Expanded(
               child: Obx(() {
-                if (ctr.favoriteCities.isEmpty) {
+                if (ctr.filteredFavoriteCities.isEmpty) {
                   return Center(
                     child: Text(
                       "No favorites yet",
-                      style: TextStyle(color: Colors.white, fontSize: 16),
+                      style:context.textTheme.bodyLarge?.copyWith(
+                          color: kWhite, fontSize: 16
+                      )
+
                     ),
                   );
                 }
 
-                return Expanded(
-                  child: ListView.builder(
-                    itemCount: favController.filteredFavoriteCities.length,
-                    itemBuilder: (context, index) {
-                      final city = favController.filteredFavoriteCities[index];
+                return ListView.builder(
+                  itemCount: ctr.filteredFavoriteCities.length,
+                  itemBuilder: (context, index) {
+                    final city = ctr.filteredFavoriteCities[index];
 
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 12,left: 10,right: 10),
-                        child: Container(
-                          height: 70,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Color(0xFF00A67D),
-                                Color(0xFF009072),
-                                Color(0xFF02493F),
-                              ],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
-                                spreadRadius: 2,
-                                blurRadius: 6,
-                                offset: Offset(4, 4),
-                              ),
-                            ],
-                            // No border for non-favorites
-                          ),
-                          child: InkWell(
-                            onTap: () {
-                              ctr.setSelectedCity(city);
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (_) => HomeScreen()),
-                              );
-                            },
-                            child:Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                // 🏙 City Name + Population
-                                Padding(
-                                  padding: const EdgeInsets.only(
-                                    top: 8.0,
-                                    left: 10,
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          Text(
-                                            city.city,
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          SizedBox(width: 2),
-                                          Icon(
-                                            Icons.location_pin,
-                                            color: Colors.white,
-                                            size: 17,
-                                          ),
-                                        ],
-                                      ),
-                                      Text(
-                                        "Population",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                // 🌡 Temperature + Favorite Icon
-                                Row(
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12, left: 10, right: 10),
+                      child: Container(
+                        height: 70,
+                        decoration: roundedwithgradent,
+                        child: InkWell(
+                          onTap: () {
+                            ctr.setSelectedCity(city);
+                           Navigator.pushNamed(context, RoutesName.homePage);
+                          },
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0, left: 10),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(top: 8.0),
-                                      child: Column(
-                                        children: [
-                                          Row(
-                                            children: [
-                                              Text.rich(
-                                                TextSpan(
-                                                  children: [
-                                                    TextSpan(
-                                                      text: city.temperature != null
-                                                          ? city.temperature!
-                                                          .toStringAsFixed(1)
-                                                          : 'Loading...',
-                                                      style: const TextStyle(
-                                                        fontSize: 23,
-                                                        fontWeight: FontWeight.bold,
-                                                        color: Colors.white,
-                                                      ),
-                                                    ),
-                                                    WidgetSpan(
-                                                      child: Transform.translate(
-                                                        offset: Offset(2, 1),
-                                                        child: Text(
-                                                          '°',
-                                                          style: TextStyle(
-                                                            fontSize: 20,
-                                                            fontWeight:
-                                                            FontWeight.bold,
-                                                            color: Colors.white,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                          Text(
-                                            "null",
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: 13,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
+                                    Row(
+                                      children: [
+                                        Text(
+                                          city.city,
+                                          style:context.textTheme.bodyLarge?.copyWith(
+                                            color: kWhite,
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                          )
+
+                                        ),
+                                        SizedBox(width: 2),
+                                        Icon(Icons.location_pin, color: kWhite, size: 17),
+                                      ],
                                     ),
-                                    IconButton(
-                                      icon: Icon(
-                                        city.isFavorite
-                                            ? Icons.favorite
-                                            : Icons.favorite_border,
-                                        color: Colors.white,
-                                      ),
-                                      onPressed: () {
-                                        favController.toggleFavorite(city);
-                                      },
-                                    ),
+                                    Obx(() {
+                                      final detail = Get.find<CityController>().details;
+                                      print("🔍 detail length: ${detail.length}"); // DEBUG
+
+                                      if (detail.isEmpty) return SizedBox();
+
+                                      final d = detail.first;
+
+                                      return Text(
+                                        "Air Quality ${d.airQualityIndex} - ${d.airQualityText}",
+                                        style: context.textTheme.bodyLarge?.copyWith(
+                                            color: kWhite, fontSize: 16
+                                        )
+
+                                      );
+                                    }),
                                   ],
                                 ),
-                              ],
-                            ),
+                              ),
+                              Row(
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 8.0),
+                                    child: Column(
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Text(
+                                              city.temperature?.toStringAsFixed(1) ?? 'Loading...',
+                                              style: context.textTheme.bodyLarge?.copyWith(
+                                                fontSize: 23,
+                                                fontWeight: FontWeight.bold,
+                                                color:kWhite,
+                                              )
+
+                                            ),
+                                            Transform.translate(
+                                              offset: Offset(1, 1),
+                                              child: Text(
+                                                '°',
+                                                style: context.textTheme.bodyLarge?.copyWith(
+                                                    fontSize: 20,
+                                                    fontWeight: FontWeight.bold,
+                                                    color:kWhite,
+                                                )
+
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Obx(() {
+                                          final detail = Get.find<CityController>().details;
+                                          print("🔍 detail length: ${detail.length}"); // DEBUG
+
+                                          if (detail.isEmpty) return SizedBox();
+
+                                          final d = detail.first;
+
+                                          return Text(
+                                            d.conditionText,
+                                            style: context.textTheme.bodyLarge?.copyWith(
+                                              fontSize: 12,
+
+                                              color: kWhite,
+                                            )
+
+                                          );
+                                        }),
+                                      ],
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: Icon(
+                                      city.isFavorite ? Icons.remove_circle: Icons.add_circle_sharp,
+                                      color: kWhite,
+                                    ),
+                                    onPressed: () {
+                                      favController.toggleFavorite(city);
+                                      ScaffoldMessenger.of(context).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            city.isFavorite
+                                                ?'${city.city} added to favorites'
+                                                :'${city.city} removed from favorites'
+
+                                          ),
+                                          duration: Duration(seconds: 2),
+                                          behavior: SnackBarBehavior.floating,
+                                          backgroundColor: bgPrimary,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(10),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                         ),
-                      );
-                    },
-                  ),
+                      ),
+                    );
+                  },
                 );
               }),
             ),
+
           ],
         ),
       ),

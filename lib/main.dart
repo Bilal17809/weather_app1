@@ -4,12 +4,14 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:weather/core/routes/routes.dart';
 import 'package:weather/core/routes/routes_name.dart';
+import 'package:weather/presentation/favrt_city/controller/favt_controller.dart';
 import 'core/common/controller/controller.dart';
 
 
 Future<void> main()  async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  Get.put(FavoriteController());
 
   Get.put(CityController());
 
