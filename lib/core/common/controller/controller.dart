@@ -12,6 +12,7 @@ import '../../../data/model/wpaw_model.dart';
 import '../../../presentation/city/contrl/model.dart';
 import '../../../presentation/daily_forecast/contrl/daily_contrl.dart';
 import '../../../presentation/hourly_forecast/contrl/hourly_contrl.dart';
+import '../../../presentation/weather/contl/weather _ctr.dart';
 
 class CityController extends GetxController {
   RxList<Malta> cityList = <Malta>[].obs;
@@ -31,22 +32,49 @@ class CityController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadCities().then((_) => restoreSelectedPreview());
+    loadCities().then((_) async {
+      await restoreSelectedPreview();
+      final city = selectedCity.value;
+      if (city != null) {
+        await fetchWeatherDetails(city.lat, city.lng);
+      }
+    });
     filterCities('');
-    Get.find<DailyForecastController>().loadWeeklyFromPrefs();
-    Get.find<HourlyForecastController>().loadHourlyFromPrefs();
+    dailyForecastController.loadWeeklyFromPrefs();
+    hourlyForecastController.loadHourlyFromPrefs();
   }
+
   Future<void> setSelectedCity(Malta city) async {
     selectedCity.value = city;
 
     // Fetch daily and hourly forecasts
     await dailyForecastController.fetchDailyForecast(city.lat, city.lng);
     await hourlyForecastController.fetchHourlyForecast(city.lat, city.lng);
-
+    await fetchWeatherDetails(city.lat, city.lng);
     // Save selected city preview to preferences
     await saveCityPreview(CityModel(city: city.city, temperature: city.temperature ?? 0.0));
   }
+  Future<void> fetchWeatherDetails(double lat, double lng) async {
+    final url = Uri.parse(
+      'http://api.weatherapi.com/v1/forecast.json?key=07e14a15571440079f5110300250407&q=$lat,$lng&days=1&aqi=no&alerts=no',
+    );
 
+    try {
+      final response = await http.get(url).timeout(Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        final weatherDetail = WeatherDetails.fromJson(data);
+
+        details.value = [weatherDetail];
+        details.refresh();
+        print("✅ Weather details loaded");
+      } else {
+        print("❌ API error: ${response.statusCode}");
+      }
+    } catch (e) {
+      print("❌ Error fetching weather details: $e");
+    }
+  }
     void filterCities(String query) {
     lastQuery.value = query;
 

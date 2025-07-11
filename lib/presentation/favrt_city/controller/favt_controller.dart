@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../data/model/city_model.dart';
+import '../../../core/common/controller/controller.dart'; // <-- Make sure this import exists
 
 class FavoriteController extends GetxController {
   RxList<Malta> favoriteCities = <Malta>[].obs;
@@ -10,20 +11,30 @@ class FavoriteController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
+    loadFavoritesFromPrefs();
   }
 
-  void toggleFavorite(Malta city) {
+  void toggleFavorite(Malta city) async {
+    final cityController = Get.find<CityController>();
+
     city.isFavorite = !city.isFavorite;
 
     if (city.isFavorite) {
-      favoriteCities.add(city);
+      // Avoid duplicate
+      if (!favoriteCities.any((c) => c.city == city.city)) {
+        favoriteCities.add(city);
+        cityController.favoriteCities.add(city);
+      }
     } else {
       favoriteCities.removeWhere((c) => c.city == city.city);
+      cityController.favoriteCities.removeWhere((c) => c.city == city.city);
     }
 
-    saveFavoriteCitiesToPrefs();
-    filterFavoriteCities('');
+    // Update UI
+    filteredFavoriteCities.assignAll(favoriteCities);
+    cityController.filteredFavoriteCities.assignAll(cityController.favoriteCities);
+
+    await saveFavoriteCitiesToPrefs();
   }
 
   void filterFavoriteCities(String query) {
@@ -52,5 +63,33 @@ class FavoriteController extends GetxController {
     print("💾 Saved ${favoriteJsonList.length} favorite cities");
   }
 
+  Future<void> loadFavoritesFromPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getStringList('favorite_cities');
 
+    if (saved != null && saved.isNotEmpty) {
+      final cityController = Get.find<CityController>();
+      final List<Malta> loadedFavorites = [];
+
+      for (final str in saved) {
+        final map = jsonDecode(str);
+        final match = cityController.cityList.firstWhereOrNull(
+                (c) => c.city.toLowerCase() == map['city'].toLowerCase());
+
+        if (match != null) {
+          match.isFavorite = true;
+          loadedFavorites.add(match);
+        }
+      }
+
+      favoriteCities.assignAll(loadedFavorites);
+      filteredFavoriteCities.assignAll(loadedFavorites);
+      cityController.favoriteCities.assignAll(loadedFavorites);
+      cityController.filteredFavoriteCities.assignAll(loadedFavorites);
+
+      print("✅ Loaded ${loadedFavorites.length} favorite cities from SharedPreferences");
+    } else {
+      print("⚠️ No favorite cities found in storage.");
+    }
+  }
 }

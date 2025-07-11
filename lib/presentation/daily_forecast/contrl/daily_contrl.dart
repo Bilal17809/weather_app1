@@ -9,7 +9,7 @@ import '../../weather/contl/weather _ctr.dart';
 class DailyForecastController extends GetxController {
   RxList<DailyForecast> dailyList = <DailyForecast>[].obs;
 
-  final String apiKey = '7d7cead5f21da78ea50ea22ff44f5797';
+
 
   Future<void> fetchDailyForecast(double lat, double lng) async {
     final url = Uri.parse(

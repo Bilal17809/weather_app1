@@ -74,14 +74,15 @@ const TextStyle labelSmallStyle = TextStyle(
 );
 //decoration
 
-final BoxDecoration roundedDecorationWithShadow = BoxDecoration(
-  color: Colors.white,
+final BoxDecoration roundedDecorationWithShadow =BoxDecoration(
   borderRadius: BorderRadius.circular(10),
+  color:horlyrow .withOpacity(0.7),
   boxShadow: [
     BoxShadow(
-      color: Colors.grey.withValues(alpha: 0.2),
-      blurRadius: 6,
-      offset: Offset(0, 2),
+      color: Colors.black.withOpacity(0.2), // Shadow color
+      spreadRadius: 2, // How much the shadow spreads
+      blurRadius: 6, // How soft the shadow is
+      offset: Offset(4, 4), // x, y: move right & down
     ),
   ],
 );
@@ -96,6 +97,26 @@ final BoxDecoration roundedDecoration = BoxDecoration(
     ),
   ],
 );
+final BoxDecoration roundedwithgradent= BoxDecoration(
+  borderRadius: BorderRadius.circular(10),
+  gradient: LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      bgPrimary,
+      bgSecondary,
+      bgDark,
+    ],
+  ),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.2),
+      spreadRadius: 2,
+      blurRadius: 6,
+      offset: Offset(4, 4),
+    ),
+  ],
+);
 final BoxDecoration roundedGreenBorderDecoration = BoxDecoration(
   color: greenColor.withValues(alpha: 0.3),
   borderRadius: BorderRadius.circular(10),
@@ -104,7 +125,13 @@ final BoxDecoration roundedGreenBorderDecoration = BoxDecoration(
     width: 1.0,
   ),
 );
-
+final BoxDecoration bgwithgradent =BoxDecoration(
+  gradient: LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [bgDark2, bgDark, bgPrimary, bgSecondary],
+  ),
+);
 final BoxDecoration rounderGreyBorderDecoration = BoxDecoration(
   color: kWhite,
   borderRadius: BorderRadius.circular(12),
@@ -112,7 +139,16 @@ final BoxDecoration rounderGreyBorderDecoration = BoxDecoration(
     color: greyBorderColor,
   ),
 );
-
+final BoxDecoration imagebg=BoxDecoration(
+  image: DecorationImage(
+    image: AssetImage("assets/images/weather6.png"),
+    fit: BoxFit.cover,
+    colorFilter: ColorFilter.mode(
+      Color(0xFF00A67D).withOpacity(0.68),
+      BlendMode.srcOver,
+    ),
+  ),
+);
 final boxShadow = BoxShadow(
   color: Colors.grey.withValues(alpha: 0.2),
   blurRadius: 6,

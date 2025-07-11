@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_styles.dart';
 import '../contrl/hourly_contrl.dart';
 
 class hourly_cast extends StatelessWidget {
@@ -14,18 +16,7 @@ class hourly_cast extends StatelessWidget {
     return  Padding(
       padding: const EdgeInsets.only(left: 10,right: 10),
       child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          color: Color(0xFF85DFC7).withOpacity(0.7),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.2), // Shadow color
-              spreadRadius: 2, // How much the shadow spreads
-              blurRadius: 6, // How soft the shadow is
-              offset: Offset(4, 4), // x, y: move right & down
-            ),
-          ],
-        ),
+        decoration: roundedDecorationWithShadow,
         child: Obx(() {
           final hourly = Get.find<HourlyForecastController>().hourlyList;
 
@@ -33,7 +24,7 @@ class hourly_cast extends StatelessWidget {
 
           if (hourly.isEmpty) {
             return Center(
-              child: Text("❌ No hourly forecast", style: TextStyle(color: Colors.white)),
+              child: Text("❌ No hourly forecast", style: context.textTheme.bodyLarge?.copyWith(color: kWhite)),
             );
           }
 
@@ -49,18 +40,18 @@ class hourly_cast extends StatelessWidget {
                       SizedBox(height: 9),
                       Image.network(h.icon, width: 53, height: 53, fit: BoxFit.cover),
                       SizedBox(height: 10),
-                      Text(h.time, style: TextStyle(color: Colors.white, fontSize: 13)),
+                      Text(h.time, style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 13)),
                       Text.rich(
                         TextSpan(
                           children: [
                             TextSpan(
                               text: "${h.temperature.round()}",
-                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                              style: context.textTheme.bodyLarge?.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: kWhite),
                             ),
                             WidgetSpan(
                               child: Transform.translate(
                                 offset: const Offset(2, 1),
-                                child: Text('°', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                                child: Text('°', style: context.textTheme.bodyLarge?.copyWith(fontSize: 20, fontWeight: FontWeight.bold, color: kWhite)),
                               ),
                             ),
                           ],

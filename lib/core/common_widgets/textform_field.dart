@@ -18,6 +18,8 @@ class CustomTextFormField extends StatelessWidget {
   final Function(String)? onChanged;
   final Function(String?)? onSaved;
   final String? Function(String?)? validator;
+  final Color? fillColor;
+
 
   const CustomTextFormField({
     super.key,
@@ -36,6 +38,8 @@ class CustomTextFormField extends StatelessWidget {
     this.onChanged,
     this.onSaved,
     this.validator,
+    this.fillColor,
+
   });
 
   @override
@@ -54,6 +58,8 @@ class CustomTextFormField extends StatelessWidget {
         hintText: hintText,
         prefixIcon: prefixIcon,
         suffixIcon: suffixIcon,
+        filled: true,
+        fillColor: fillColor ?? Colors.grey.shade200,
         border: border ?? InputBorder.none,
         focusedBorder: focusedBorder ?? InputBorder.none,
         enabledBorder: enabledBorder ?? InputBorder.none,
