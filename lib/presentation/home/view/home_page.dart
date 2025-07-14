@@ -28,6 +28,14 @@ class HomeScreen extends StatelessWidget {
           final now = DateTime.now();
           final formattedDate = DateFormat('EEEE d MMMM').format(now);
 
+          final showCurrentLocation =
+              ctr.currentLocationName.value != 'Detecting...' &&
+                  !ctr.isCityManuallySelected.value;
+
+          final locationName = showCurrentLocation
+              ? ctr.currentLocationName.value
+              : city?.city ?? 'Select city';
+
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -43,13 +51,12 @@ class HomeScreen extends StatelessWidget {
                       Icon(Icons.location_on, color: kWhite, size: 17),
                       SizedBox(width: 5),
                       Text(
-                        city?.city ?? 'Select city',
+                        locationName,
                         style: context.textTheme.bodyLarge?.copyWith(
                           color: kWhite,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
-
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
@@ -68,14 +75,15 @@ class HomeScreen extends StatelessWidget {
                 alignment: Alignment.topLeft,
                 child: InkWell(
                   onTap: () {
-                    Navigator.pushNamed(context, RoutesName.favorite);
+                    Navigator.pushNamed(context, RoutesName.citypage);
                   },
                   child: Icon(Icons.add_circle_sharp, color: kWhite, size: 28),
                 ),
               ),
             ],
           );
-        }),
+        })
+        ,
       ),
       body: Container(
         height: double.infinity,
@@ -119,13 +127,24 @@ class HomeScreen extends StatelessWidget {
 
                 Obx(() {
                   final city = ctr.selectedCity.value;
+
+                  final showCurrentLocation =
+                      ctr.currentLocationName.value != 'Detecting...' &&
+                          !ctr.isCityManuallySelected.value;
+
+                  final temp = showCurrentLocation
+                      ? ctr.currentLocationTemp.value
+                      : city?.temperature;
+
                   return Text(
-                    city?.temperature != null
-                        ? "${city!.temperature!.toStringAsFixed(1)}°"
+                    temp != null && temp != 0
+                        ? "${temp.toStringAsFixed(1)}°"
                         : "Loading...",
                     style: context.textTheme.bodyLarge?.copyWith(fontSize: 50, color: dividerColor),
                   );
                 }),
+
+
 
                 hourly_cast(),
                 SizedBox(height: 10),

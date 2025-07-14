@@ -17,7 +17,7 @@ class weather extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFF001B31),
+        backgroundColor: bgDark2,
         automaticallyImplyLeading: false,
         title: Obx(() {
           final city = ctr.selectedCity.value;
@@ -57,7 +57,7 @@ class weather extends StatelessWidget {
                 alignment: Alignment.topLeft,
                 child: InkWell(
                   onTap: () {
-                    Navigator.pushNamed(context, RoutesName.favorite);
+                    Navigator.pushNamed(context, RoutesName.homePage);
                   },
                   child: Icon(
                     Icons.add_circle_sharp,

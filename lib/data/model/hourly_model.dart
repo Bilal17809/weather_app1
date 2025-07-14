@@ -15,7 +15,7 @@ class HourlyWeather {
   factory HourlyWeather.fromJson(Map<String, dynamic> json) {
     final dateTime = DateTime.parse(json['time']);
     return HourlyWeather(
-      time: DateFormat('HH:mm').format(dateTime),
+      time: DateFormat('h a').format(dateTime),
       temperature: (json['temp_c'] as num).toDouble(),
       icon: "https:${json['condition']['icon']}",
     );

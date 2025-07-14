@@ -11,10 +11,9 @@ class HourlyForecastController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadHourlyFromPrefs(); // ✅ Load saved data at startup
+    loadHourlyFromPrefs();
   }
 
-  /// ✅ Fetch next 24 hours from API
   Future<void> fetchHourlyForecast(double lat, double lng) async {
     print("📡 fetchHourlyForecast() called for $lat, $lng");
 

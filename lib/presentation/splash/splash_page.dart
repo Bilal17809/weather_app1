@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:get/get.dart';
 
 
+import '../../core/common/controller/controller.dart';
 import '../../core/routes/routes_name.dart';
+import '../../core/theme/app_colors.dart';
 import '../animation/animation.dart';
 import '../animation/text_animation.dart';
 
@@ -16,6 +19,7 @@ class Splash extends StatefulWidget {
 
 class _SplashState extends State<Splash> {
   bool showButton = false;
+  final cityController = Get.find<CityController>();
 
   @override
   void initState() {
@@ -46,9 +50,9 @@ class _SplashState extends State<Splash> {
               TypewriterText(
                 text: "Malta Weather",
                 speed: Duration(milliseconds: 150), // You can adjust speed
-                style: TextStyle(
+                style: context.textTheme.bodyLarge?.copyWith(
                   fontSize: 40,
-                  color: Color(0xFFF19C1E),
+                  color: orangeYellow,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -64,8 +68,8 @@ class _SplashState extends State<Splash> {
                 },
                 child: Text(
                   "Forecast",
-                  style: TextStyle(
-                    color: Color(0xFFF19C1E),
+                  style: context.textTheme.bodyLarge?.copyWith(
+                    color: orangeYellow,
                     fontWeight: FontWeight.bold,
                     fontSize: 35,
                   ),
@@ -90,8 +94,8 @@ class _SplashState extends State<Splash> {
                       alignment: Alignment.center,
                       child: Text(
                         "Weather App Leads in Malta",
-                        style: TextStyle(
-                          color: Colors.white,
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          color: kWhite,
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
                         ),
@@ -102,8 +106,8 @@ class _SplashState extends State<Splash> {
                       alignment: Alignment.center,
                       child: Text(
                         "for Accurate Forecasts",
-                        style: TextStyle(
-                          color: Colors.white,
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          color: kWhite,
                           fontWeight: FontWeight.bold,
                           fontSize: 15,
                         ),
@@ -112,7 +116,10 @@ class _SplashState extends State<Splash> {
                   ],
                 ),
               ),
-              SizedBox(height: 80,),
+              SizedBox(height: 87,),
+
+
+
 
               showButton
                   ? ElevatedButton(
@@ -121,18 +128,21 @@ class _SplashState extends State<Splash> {
                   Navigator.pushNamed(context, RoutesName.homePage);
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFF19C1E),
+                  backgroundColor: orangeYellow,
                   foregroundColor: Color(0xFF002E3F),
                 ),
-                child: Text(
-                  "Get Start",
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Text(
+                    "Get Start",
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               )
-                  : SpinKitThreeBounce(color: Colors.white, size: 50.0),
+                  : SpinKitThreeBounce(color: kWhite, size: 50.0),
               SizedBox(height: 40),
             ],
           ),
