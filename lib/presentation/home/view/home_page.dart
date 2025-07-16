@@ -94,36 +94,31 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: 20),
+
 
                 SizedBox(height: 15),
                 Obx(() {
-                  final detail = Get.find<CityController>().details;
-                  print("🔍 detail length: ${detail.length}"); // DEBUG
+                  final detail = Get.find<HourlyForecastController>().currentLocationDetail.value;
 
-                  if (detail.isEmpty) return SizedBox();
-
-                  final d = detail.first;
+                  if (detail == null) return SizedBox();
 
                   return Column(
                     children: [
                       Image.network(
-                        d.conditionIcon,
+                        detail.conditionIcon,
                         width: 210,
-                        height: 120,
+                        height: 160,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(Icons.error, color: kWhite);
-                        },
                       ),
                       SizedBox(height: 10),
                       Text(
-                        d.conditionText,
-                        style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 20),
+                        detail.conditionText,
+                        style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 15),
                       ),
                     ],
                   );
                 }),
+
 
                 Obx(() {
                   final city = ctr.selectedCity.value;
@@ -146,7 +141,7 @@ class HomeScreen extends StatelessWidget {
 
 
 
-                hourly_cast(),
+                HourlyCast(),
                 SizedBox(height: 10),
                 DailyCastPage(),
               ],

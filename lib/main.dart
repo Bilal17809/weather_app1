@@ -5,15 +5,18 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:weather/core/routes/routes.dart';
 import 'package:weather/core/routes/routes_name.dart';
 import 'package:weather/presentation/city/contrl/favt_controller.dart';
+import 'package:weather/presentation/daily_forecast/contrl/daily_contrl.dart';
 import 'core/common/controller/controller.dart';
 
 
 Future<void> main()  async {
   WidgetsFlutterBinding.ensureInitialized();
-
+  final prefs = await SharedPreferences.getInstance();
+  prefs.remove('hourly_data');
   Get.put(FavoriteController());
 
   Get.put(CityController());
+  Get.put(DailyForecastController()); // If not already
 
   runApp(const MyApp());
 }

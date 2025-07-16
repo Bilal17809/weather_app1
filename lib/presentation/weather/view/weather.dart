@@ -21,22 +21,35 @@ class weather extends StatelessWidget {
         automaticallyImplyLeading: false,
         title: Obx(() {
           final city = ctr.selectedCity.value;
+          final selectedDate = ctr.selectedDate.value;
           final now = DateTime.now();
-          final formattedDate = DateFormat('EEEE d MMMM').format(now);
+
+          // Show selected date or current date
+          final formattedDate = DateFormat('EEEE d MMMM').format(
+            selectedDate ?? now,
+          );
+
+          final showCurrentLocation =
+              ctr.currentLocationName.value != 'Detecting...' &&
+                  !ctr.isCityManuallySelected.value;
+
+          final locationName = showCurrentLocation
+              ? ctr.currentLocationName.value
+              : city?.city ?? 'Select city';
 
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Align(alignment: Alignment.topLeft),
+              const SizedBox(width: 40),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.location_on, color: kWhite, size: 17),
-                      SizedBox(width: 5),
+                      const Icon(Icons.location_on, color: kWhite, size: 17),
+                      const SizedBox(width: 5),
                       Text(
-                        city?.city ?? 'Select city',
+                        locationName,
                         style: context.textTheme.bodyLarge?.copyWith(
                           color: kWhite,
                           fontSize: 16,
@@ -48,8 +61,11 @@ class weather extends StatelessWidget {
                     ],
                   ),
                   Text(
-                    formattedDate,
-                    style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 12),
+                    formattedDate, // ← updated to show selected day
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      color: kWhite,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -57,50 +73,41 @@ class weather extends StatelessWidget {
                 alignment: Alignment.topLeft,
                 child: InkWell(
                   onTap: () {
-                    Navigator.pushNamed(context, RoutesName.homePage);
+                    Navigator.pushNamed(context, RoutesName.citypage);
                   },
-                  child: Icon(
-                    Icons.add_circle_sharp,
-                    color: kWhite,
-                    size: 28,
-                  ),
+                  child: const Icon(Icons.add_circle_sharp, color: kWhite, size: 28),
                 ),
               ),
             ],
           );
-        }),
+        })
+
       ),
       body: Container(
         decoration: bgwithgradent,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(height: 20),
+
 
             SizedBox(height: 25),
             Obx(() {
-              final detail = Get.find<CityController>().details;
-              print("🔍 detail length: ${detail.length}"); // DEBUG
+              final detail = Get.find<HourlyForecastController>().currentLocationDetail.value;
 
-              if (detail.isEmpty) return SizedBox();
-
-              final d = detail.first;
+              if (detail == null) return SizedBox();
 
               return Column(
                 children: [
                   Image.network(
-                    d.conditionIcon,
+                    detail.conditionIcon,
                     width: 210,
-                    height: 120,
+                    height: 160,
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.error, color: kWhite);
-                    },
                   ),
                   SizedBox(height: 10),
                   Text(
-                    d.conditionText,
-                    style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 20),
+                    detail.conditionText,
+                    style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 15),
                   ),
                 ],
               );

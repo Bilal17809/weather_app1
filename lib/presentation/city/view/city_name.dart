@@ -4,6 +4,8 @@ import 'package:get/get.dart';
 import '../../../core/common/controller/controller.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_styles.dart';
+import '../../daily_forecast/contrl/daily_contrl.dart';
+import '../../hourly_forecast/contrl/hourly_contrl.dart';
 import '../contrl/favt_controller.dart';
 import '../../home/view/home_page.dart';
 class CityName extends StatefulWidget {
@@ -44,6 +46,46 @@ class _CityNameState extends State<CityName> {
       return ListView(
         padding: const EdgeInsets.symmetric(horizontal: 13),
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: Row(
+                  children: const [
+                    Icon(Icons.my_location, color: dividerColor),
+                    SizedBox(width: 8),
+                    Text(
+                      "Current Location",
+                      style: TextStyle(
+                        color: dividerColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.chevron_right, color: dividerColor),
+                onPressed: () {
+                  // Clear selected city
+                  Get.find<CityController>().clearSelectedCity();
+
+                  // Fetch location weather
+                  Get.find<HourlyForecastController>().getCurrentLocationAndFetchWeather();
+                 Get.find<DailyForecastController>().getCurrentLocationAndFetchDaily();
+                  // Navigate to home screen
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) =>  HomeScreen()),
+                  );
+                },
+              ),
+            ],
+          ),
+          const Divider(color: Colors.white24),
+
           if (favoriteCities.isNotEmpty) ...[
             const Padding(
               padding: EdgeInsets.only(top: 3, bottom: 3),

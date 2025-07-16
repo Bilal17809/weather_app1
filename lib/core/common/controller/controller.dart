@@ -28,6 +28,8 @@ class CityController extends GetxController {
   RxList<Malta> otherCities = <Malta>[].obs;
   RxList<Malta> allCities = <Malta>[].obs;
   RxString currentLocationName = 'Detecting...'.obs;
+  Rxn<DateTime> selectedDate = Rxn<DateTime>();
+
   RxDouble currentLocationTemp = 0.0.obs;
   RxBool isCityManuallySelected = false.obs;
   // Instance of the newly created controllers
@@ -54,6 +56,11 @@ class CityController extends GetxController {
     dailyForecastController.loadWeeklyFromPrefs();
     hourlyForecastController.loadHourlyFromPrefs();
   }
+  void clearSelectedCity() {
+    selectedCity.value = null;
+    print("📍 Cleared selected city — using current location");
+  }
+
 
   Future<void> setSelectedCity(Malta city) async {
     isCityManuallySelected.value = true;

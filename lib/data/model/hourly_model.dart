@@ -1,7 +1,5 @@
-import 'package:intl/intl.dart';
-
 class HourlyWeather {
-  final String time;
+  final String time; // Keep full time string
   final double temperature;
   final String icon;
 
@@ -11,11 +9,10 @@ class HourlyWeather {
     required this.icon,
   });
 
-  /// ✅ From WeatherAPI format
+  /// ✅ From WeatherAPI format — keep ISO datetime format
   factory HourlyWeather.fromJson(Map<String, dynamic> json) {
-    final dateTime = DateTime.parse(json['time']);
     return HourlyWeather(
-      time: DateFormat('h a').format(dateTime),
+      time: json['time'], // e.g., "2025-07-16 14:00"
       temperature: (json['temp_c'] as num).toDouble(),
       icon: "https:${json['condition']['icon']}",
     );
@@ -30,7 +27,6 @@ class HourlyWeather {
     );
   }
 
-  /// ✅ For SharedPreferences
   Map<String, dynamic> toJson() {
     return {
       'time': time,
