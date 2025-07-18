@@ -12,10 +12,9 @@ class DailyForecastController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-
-    getCurrentLocationAndFetchDaily(); // 🔄 Auto-fetch on startup
+    loadWeeklyFromPrefs();
+    getCurrentLocationAndFetchDaily();
   }
-
   Future<void> getCurrentLocationAndFetchDaily() async {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -28,7 +27,7 @@ class DailyForecastController extends GetxController {
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
         if (permission == LocationPermission.deniedForever) {
-          print('❌ Location permission denied forever');
+          print('❌ Permission denied forever');
           return;
         }
       }
@@ -37,13 +36,14 @@ class DailyForecastController extends GetxController {
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      print("📍 Current location: ${position.latitude}, ${position.longitude}");
+      print("📍 Daily Location: ${position.latitude}, ${position.longitude}");
 
       await fetchDailyForecast(position.latitude, position.longitude);
     } catch (e) {
-      print("❌ Error getting location: $e");
+      print("❌ Location error: $e");
     }
   }
+
 
   Future<void> fetchDailyForecast(double lat, double lng) async {
     final url = Uri.parse(
@@ -71,12 +71,16 @@ class DailyForecastController extends GetxController {
       print("❌ Exception in fetchDailyForecast: $e");
     }
   }
-
   Future<void> saveWeeklyToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonList = dailyList.map((d) => jsonEncode(d.toJson())).toList();
+
+    // 🟡 Check: How many items are you saving?
+    print("💾 Saving ${jsonList.length} days to prefs");
+
     await prefs.setStringList('weekly_forecast', jsonList);
   }
+
 
   Future<void> loadWeeklyFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();

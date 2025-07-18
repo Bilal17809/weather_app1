@@ -25,23 +25,21 @@ class CustomDrawer extends StatelessWidget {
             leading: Icon(Icons.star_rate),
             title: Text('Rate Us'),
             onTap: () {
-              launchUrl(Uri.parse(
-                  'https://play.google.com/store/apps/details?id=com.example.weather_app'));
+
             },
           ),
           ListTile(
             leading: Icon(Icons.privacy_tip),
             title: Text('Privacy'),
             onTap: () {
-              launchUrl(Uri.parse('https://yourwebsite.com/privacy-policy'));
+
             },
           ),
           ListTile(
             leading: Icon(Icons.apps),
             title: Text('More Apps'),
             onTap: () {
-              launchUrl(Uri.parse(
-                  'https://play.google.com/store/apps/dev?id=YOUR_DEVELOPER_ID'));
+
             },
           ),
         ],

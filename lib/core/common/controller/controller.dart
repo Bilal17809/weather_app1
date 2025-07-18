@@ -56,10 +56,7 @@ class CityController extends GetxController {
     dailyForecastController.loadWeeklyFromPrefs();
     hourlyForecastController.loadHourlyFromPrefs();
   }
-  void clearSelectedCity() {
-    selectedCity.value = null;
-    print("📍 Cleared selected city — using current location");
-  }
+
 
 
   Future<void> setSelectedCity(Malta city) async {

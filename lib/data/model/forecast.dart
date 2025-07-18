@@ -23,7 +23,7 @@ class DailyForecast {
     final parsedDate = DateTime.parse(json['date']);
     return DailyForecast(
       date: json['date'],
-      dayName: DateFormat('E').format(parsedDate),
+      dayName:json['forecast']['forecastday'],
       maxTemp: (json['day']['maxtemp_c'] as num).toDouble(),
       minTemp: (json['day']['mintemp_c'] as num).toDouble(),
       avgTemp: (json['day']['avgtemp_c'] as num).toDouble(),

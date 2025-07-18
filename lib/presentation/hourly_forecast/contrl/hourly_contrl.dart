@@ -14,7 +14,10 @@ class HourlyForecastController extends GetxController {
   RxDouble currentLat = 0.0.obs;
   RxDouble currentLng = 0.0.obs;
   var selectedHourTime = Rxn<String>();
-
+  var currentTemperature = ''.obs;
+  var cityName = ''.obs;
+  var conditionText = ''.obs;
+  var iconUrl = ''.obs;
   void setSelectedHour(String? time) {
     selectedHourTime.value = time;
   }
@@ -22,11 +25,8 @@ class HourlyForecastController extends GetxController {
   void onInit() {
     super.onInit();
     getCurrentLocationAndFetchWeather();
+
   }
-
-  var cityName = ''.obs;
-  var currentTemperature = ''.obs;
-
   Future<void> getCurrentLocationAndFetchWeather() async {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
@@ -42,31 +42,40 @@ class HourlyForecastController extends GetxController {
         desiredAccuracy: LocationAccuracy.high,
       );
 
-      currentLat.value = position.latitude;
-      currentLng.value = position.longitude;
-
-      print("📍 Got location: ${position.latitude}, ${position.longitude}");
-
-      // 🔽 Fetch and parse response here
-      final data = await fetchHourlyForecast(currentLat.value, currentLng.value);
-
-      // ✅ Update city and temperature
-      if (data != null) {
-        cityName.value = data['location']['name'];
-        currentTemperature.value = data['current']['temp_c'].toString();
-
-        print("✅ City: ${cityName.value}, Temp: ${currentTemperature.value}°C");
-      }
-
+      await fetchCurrentWeather(position.latitude, position.longitude);
     } catch (e) {
-      print("❌ Failed to get location: $e");
+      print('❌ Error getting current location: $e');
     }
   }
 
-  Future<Map<String, dynamic>?> fetchHourlyForecast(double lat, double lng, {String? selectedDate}) async {
+  Future<void> fetchCurrentWeather(double lat, double lng) async {
+    final url = Uri.parse(
+        'http://api.weatherapi.com/v1/forecast.json?key=07e14a15571440079f5110300250407&q=$lat,$lng&days=7&aqi=no&alerts=no');
+
+    try {
+      final response = await http.get(url);
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        currentTemperature.value = data['current']['temp_c'].toString();
+        cityName.value = data['location']['name'];
+        conditionText.value = data['current']['condition']['text'];
+        iconUrl.value = "https:${data['current']['condition']['icon']}";
+
+        print("✅ Current weather: ${currentTemperature.value}°C, $conditionText");
+      } else {
+        print('❌ API Error: ${response.statusCode}');
+      }
+    } catch (e) {
+      print('❌ Exception fetching current weather: $e');
+    }
+  }
+  Future<void> fetchHourlyForecast(double lat, double lng, {String? selectedDate}) async {
     final url = Uri.parse(
         'http://api.weatherapi.com/v1/forecast.json?key=07e14a15571440079f5110300250407&q=$lat,$lng&days=7&aqi=no&alerts=no'
+
     );
+
 
     try {
       final response = await http.get(url).timeout(const Duration(seconds: 10));
@@ -74,6 +83,7 @@ class HourlyForecastController extends GetxController {
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
+        // ✅ Store current location icon/text
         currentLocationDetail.value = WeatherDetail(
           conditionText: data['current']['condition']['text'],
           conditionIcon: "https:${data['current']['condition']['icon']}",
@@ -83,10 +93,10 @@ class HourlyForecastController extends GetxController {
             .expand((day) => day['hour'] as List)
             .toList();
 
+        // ✅ Use selected date or today
         final String targetDate = selectedDate ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
 
         final filteredHours = allHours
-            .where((h) => h['time'].toString().startsWith(targetDate))
             .map((e) => HourlyWeather.fromJson(e))
             .toList();
 
@@ -95,18 +105,13 @@ class HourlyForecastController extends GetxController {
         hourlyList.refresh();
 
         print("✅ Got ${filteredHours.length} hourly items for $targetDate");
-
-        return data; // ✅ Add this
       } else {
         print("❌ Hourly API error: ${response.statusCode}");
-        return null;
       }
     } catch (e) {
       print("❌ Exception in fetchHourlyForecast: $e");
-      return null;
     }
   }
-
 
 
   void setSelectedDayDetail(String conditionText, String iconUrl) {

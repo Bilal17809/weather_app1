@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:weather/core/routes/routes_name.dart';
 
+import '../../../core/common/controller/CurrentWeatherController.dart';
 import '../../../core/common/controller/controller.dart';
+import '../../../core/common_widgets/overlay_widget.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_styles.dart';
 import '../../daily_forecast/contrl/daily_contrl.dart';
@@ -26,19 +28,15 @@ class _CityNameState extends State<CityName> {
   Widget build(BuildContext context) {
     return Obx(() {
       if (ctr.loading.value) {
-        return const Center(child: CircularProgressIndicator());
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showLoadingOverlay(context);  // ✅ Safe to show overlay now
+        });
       }
 
       if (ctr.filteredList.isEmpty) {
-        return Center(
-          child: Text(
-            "No cities found.",
-            style: context.textTheme.bodyLarge?.copyWith(
-              color: kWhite,
-              fontSize: 16,
-            ),
-          ),
-        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          showLoadingOverlay(context);  // ✅ Safe to show overlay now
+        });
       }
 
       final favoriteCities = ctr.filteredList.where((c) => c.isFavorite).toList();
@@ -49,18 +47,16 @@ class _CityNameState extends State<CityName> {
         children: [
           InkWell(
             onTap: (){
-              Get.find<CityController>().clearSelectedCity();
 
               // Fetch location weather
-              Get.find<HourlyForecastController>().getCurrentLocationAndFetchWeather();
-              Get.find<DailyForecastController>().getCurrentLocationAndFetchDaily();
+              Get.find<CurrentWeatherController>().getCurrentLocationAndFetchWeather();
+              // Get.find<DailyForecastController>().getCurrentLocationAndFetchDaily();
               // Navigate to home screen
               Navigator.pushNamed(context, RoutesName.homePage);
             },
             child: Container(
-              decoration: BoxDecoration(
-                border: Border.all(width:2,color:bgDark)
-              ),
+              height: 50,
+              decoration: currenlocation,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
