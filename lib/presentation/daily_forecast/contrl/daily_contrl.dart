@@ -47,7 +47,8 @@ class DailyForecastController extends GetxController {
 
   Future<void> fetchDailyForecast(double lat, double lng) async {
     final url = Uri.parse(
-      'http://api.weatherapi.com/v1/forecast.json?key=07e14a15571440079f5110300250407&q=$lat,$lng&days=3&aqi=no&alerts=no',
+        'http://api.weatherapi.com/v1/forecast.json?key=07e14a15571440079f5110300250407&q=$lat,$lng&days=7&aqi=no&alerts=no'
+
     );
 
 

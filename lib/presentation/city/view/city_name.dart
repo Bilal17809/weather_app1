@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:weather/core/routes/routes_name.dart';
 
 import '../../../core/common/controller/controller.dart';
 import '../../../core/theme/app_colors.dart';
@@ -46,43 +47,44 @@ class _CityNameState extends State<CityName> {
       return ListView(
         padding: const EdgeInsets.symmetric(horizontal: 13),
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 10),
-                child: Row(
-                  children: const [
-                    Icon(Icons.my_location, color: dividerColor),
-                    SizedBox(width: 8),
-                    Text(
-                      "Current Location",
-                      style: TextStyle(
-                        color: dividerColor,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.chevron_right, color: dividerColor),
-                onPressed: () {
-                  // Clear selected city
-                  Get.find<CityController>().clearSelectedCity();
+          InkWell(
+            onTap: (){
+              Get.find<CityController>().clearSelectedCity();
 
-                  // Fetch location weather
-                  Get.find<HourlyForecastController>().getCurrentLocationAndFetchWeather();
-                 Get.find<DailyForecastController>().getCurrentLocationAndFetchDaily();
-                  // Navigate to home screen
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) =>  HomeScreen()),
-                  );
-                },
+              // Fetch location weather
+              Get.find<HourlyForecastController>().getCurrentLocationAndFetchWeather();
+              Get.find<DailyForecastController>().getCurrentLocationAndFetchDaily();
+              // Navigate to home screen
+              Navigator.pushNamed(context, RoutesName.homePage);
+            },
+            child: Container(
+              decoration: BoxDecoration(
+                border: Border.all(width:2,color:bgDark)
               ),
-            ],
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 10),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.my_location, color: dividerColor),
+                        SizedBox(width: 8),
+                        Text(
+                          "Current Location",
+                          style: TextStyle(
+                            color: dividerColor,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                ],
+              ),
+            ),
           ),
           const Divider(color: Colors.white24),
 

@@ -5,6 +5,7 @@ import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:weather/core/routes/routes_name.dart';
 import 'package:weather/data/model/hourly_model.dart';
+import 'package:weather/presentation/home/view/sidebar.dart';
 import '../../../core/common/controller/controller.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_styles.dart';
@@ -20,6 +21,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer:  CustomDrawer(),
       appBar: AppBar(
         backgroundColor: bgDark2,
         automaticallyImplyLeading: false,
@@ -41,8 +43,17 @@ class HomeScreen extends StatelessWidget {
             children: [
               Align(
                 alignment: Alignment.topLeft,
-                child: Icon(Icons.menu, color: kWhite, size: 28),
+                child: Builder(
+                  builder: (context) => InkWell(
+                    onTap: () {
+                      Scaffold.of(context).openDrawer(); // ✅ This opens the sidebar!
+                    },
+                    child: const Icon(Icons.menu, color: Colors.white, size: 28),
+                  ),
+                ),
               ),
+
+
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
