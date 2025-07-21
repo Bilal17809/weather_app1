@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
 
@@ -15,6 +16,8 @@ class Splash extends StatefulWidget {
 }
 
 class _SplashState extends State<Splash> {
+
+
   bool showButton = false;
 
   @override
@@ -22,6 +25,7 @@ class _SplashState extends State<Splash> {
     super.initState();
 
     Future.delayed(Duration(seconds: 5), () {
+
       if (mounted) {
         setState(() {
           showButton = true;
@@ -117,7 +121,8 @@ class _SplashState extends State<Splash> {
               showButton
                   ? ElevatedButton(
 
-                onPressed: () {
+                onPressed: () async {
+                  await showOverlayIfPermitted();
                   Navigator.pushNamed(context, RoutesName.homePage);
                 },
                 style: ElevatedButton.styleFrom(
@@ -139,5 +144,27 @@ class _SplashState extends State<Splash> {
         ),
       ),
     );
+  }
+}
+
+
+Future<void> showOverlayIfPermitted() async {
+  final isGranted = await FlutterOverlayWindow.isPermissionGranted();
+
+  if (!isGranted) {
+    await FlutterOverlayWindow.requestPermission();
+  }
+
+  if (await FlutterOverlayWindow.isPermissionGranted()) {
+    await FlutterOverlayWindow.showOverlay(
+      height: 160,
+      width: 200,
+      alignment: OverlayAlignment.topRight,
+      flag: OverlayFlag.defaultFlag,
+      visibility: NotificationVisibility.visibilityPublic,
+    );
+  } else {
+    // Optional: Show a dialog or toast saying permission is required
+    print("❌ Overlay permission not granted by the user.");
   }
 }

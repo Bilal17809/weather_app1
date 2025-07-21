@@ -39,6 +39,7 @@ class DailyCastPage extends StatelessWidget {
                 final w = daily[index];
                 return InkWell(
                   onTap: () {
+                    controller.selectedDayIndex.value = index;
                     Navigator.pushNamed(context, RoutesName.weatherpage);
                   },
                   child: Padding(

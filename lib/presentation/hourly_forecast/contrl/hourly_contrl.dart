@@ -1,25 +1,73 @@
 import 'dart:convert';
+import 'package:flutter/animation.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../../data/model/hourly_model.dart';
 
 class HourlyForecastController extends GetxController {
   RxList<HourlyWeather> hourlyList = <HourlyWeather>[].obs;
+  RxInt selectedHourIndex = 0.obs;
+  final ScrollController scrollController = ScrollController();
 
+  /// ✅ Converts current time to Malta local time (UTC+2)
+  DateTime getMaltaTime() {
+    return DateTime.now().toUtc().add(const Duration(hours: 2));
+  }
+
+  void autoScrollToCurrentHour() {
+    if (hourlyList.isEmpty) return;
+
+    final now = getMaltaTime(); // ✅ Use Malta local time
+
+    print("📍 Malta local time: ${now.hour}:${now.minute}");
+
+    for (int i = 0; i < hourlyList.length; i++) {
+      final h = hourlyList[i];
+
+      final apiHour = h.rawTime.hour;
+
+      if (apiHour == now.hour) {
+        selectedHourIndex.value = i;
+
+        Future.delayed(const Duration(milliseconds: 200), () {
+          final offset = (i * 90).toDouble();
+          scrollController.animateTo(
+            offset,
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeInOut,
+          );
+        });
+
+        print("✅ Found matching hour: $apiHour at index $i");
+        break;
+      }
+    }
+  }
+
+  void setHourlyForecast(List<HourlyWeather> data) {
+    hourlyList.value = data;
+    autoScrollToCurrentHour();
+  }
 
   @override
   void onInit() {
     super.onInit();
-    loadHourlyFromPrefs(); // ✅ Load saved data at startup
+    loadHourlyFromPrefs();
   }
 
-  /// ✅ Fetch next 24 hours from API
+  void updateSelectedHour(int index) {
+    selectedHourIndex.value = index;
+  }
+
+  /// ✅ Fetch 24 hours from 00:00 to 23:00
   Future<void> fetchHourlyForecast(double lat, double lng) async {
     print("📡 fetchHourlyForecast() called for $lat, $lng");
 
     final url = Uri.parse(
-      'http://api.weatherapi.com/v1/forecast.json?key=07e14a15571440079f5110300250407&q=$lat,$lng&days=7&aqi=no&alerts=no',
+      'http://api.weatherapi.com/v1/forecast.json?key=8e1b9cfeaccc48c4b2b85154230304&q=$lat,$lng&days=1&aqi=no&alerts=no',
     );
 
     try {
@@ -31,23 +79,28 @@ class HourlyForecastController extends GetxController {
             .expand((day) => day['hour'] as List)
             .toList();
 
-        final now = DateTime.now(); // ✅ Use local time
-        final next24 = allHours
+        final now = DateTime.now();
+        final today = DateTime(now.year, now.month, now.day);
+
+        final start = today; // 00:00 today
+        final end = today.add(const Duration(hours: 23)); // 23:00 today
+
+        final filteredHours = allHours
             .where((h) {
           final dt = DateTime.parse(h['time']);
-          return dt.isAfter(now);
+          return dt.isAfter(start.subtract(const Duration(minutes: 1))) &&
+              dt.isBefore(end.add(const Duration(minutes: 1)));
         })
-            .take(24)
             .map((e) => HourlyWeather.fromJson(e))
             .toList();
 
-        hourlyList.value = next24;
+        hourlyList.value = filteredHours;
         await saveHourlyToPrefs();
         hourlyList.refresh();
 
-        print("✅ Got ${allHours.length} total hours from API");
-        print("⏰ Now: $now");
-        print("⏭️ Filtered ${next24.length} upcoming hours");
+        print("✅ Got ${filteredHours.length} hourly items from 00:00 to 23:00");
+
+        autoScrollToCurrentHour();
       } else {
         print("❌ Hourly API error: ${response.statusCode}");
       }
@@ -56,16 +109,11 @@ class HourlyForecastController extends GetxController {
     }
   }
 
-  /// ✅ Save to SharedPreferences using flat JSON
   Future<void> saveHourlyToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
 
     final List<String> hourlyJsonList = hourlyList.map((h) {
-      return jsonEncode({
-        'time': h.time,
-        'temperature': h.temperature,
-        'icon': h.icon,
-      });
+      return jsonEncode(h.toJson());
     }).toList();
 
     print("💾 Saving ${hourlyJsonList.length} hourly items to SharedPreferences");
@@ -73,7 +121,6 @@ class HourlyForecastController extends GetxController {
     await prefs.setStringList('hourly_data', hourlyJsonList);
   }
 
-  /// ✅ Load from SharedPreferences using flat parser
   Future<void> loadHourlyFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final List<String>? hourlyJsonList = prefs.getStringList('hourly_data');

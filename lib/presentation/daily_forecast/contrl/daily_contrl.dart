@@ -8,12 +8,14 @@ import '../../weather/contl/weather _ctr.dart';
 
 class DailyForecastController extends GetxController {
   RxList<DailyForecast> dailyList = <DailyForecast>[].obs;
+  final selectedDayIndex = 0.obs; // or selectedDate = Rx<DateTime>()
+
 
 
 
   Future<void> fetchDailyForecast(double lat, double lng) async {
     final url = Uri.parse(
-      'http://api.weatherapi.com/v1/forecast.json?key=07e14a15571440079f5110300250407&q=$lat,$lng&days=7&aqi=no&alerts=no',
+      'http://api.weatherapi.com/v1/forecast.json?key=8e1b9cfeaccc48c4b2b85154230304&q=$lat,$lng&days=7&aqi=no&alerts=no',
     );
 
     try {

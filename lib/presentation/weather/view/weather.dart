@@ -8,6 +8,7 @@ import '../../../core/common/controller/controller.dart' show CityController;
 import '../../../core/routes/routes_name.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_styles.dart';
+import '../../daily_forecast/contrl/daily_contrl.dart';
 
 class weather extends StatelessWidget {
   weather({super.key});
@@ -21,8 +22,13 @@ class weather extends StatelessWidget {
         automaticallyImplyLeading: false,
         title: Obx(() {
           final city = ctr.selectedCity.value;
-          final now = DateTime.now();
-          final formattedDate = DateFormat('EEEE d MMMM').format(now);
+          final controller = Get.find<DailyForecastController>();
+
+          final selectedDay = controller.dailyList.isNotEmpty
+              ? controller.dailyList[controller.selectedDayIndex.value].date as DateTime
+              : DateTime.now();
+
+          final formattedDate = DateFormat('EEEE d MMMM').format(selectedDay);
 
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -69,6 +75,8 @@ class weather extends StatelessWidget {
             ],
           );
         }),
+
+
       ),
       body: Container(
         decoration: bgwithgradent,
