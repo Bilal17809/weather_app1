@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../data/model/city_model.dart';
 import '../constant/constant.dart';
 import 'app_colors.dart';
 
@@ -97,26 +98,31 @@ final BoxDecoration roundedDecoration = BoxDecoration(
     ),
   ],
 );
-final BoxDecoration roundedwithgradent= BoxDecoration(
-  borderRadius: BorderRadius.circular(10),
-  gradient: LinearGradient(
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-    colors: [
-      bgPrimary,
-      bgSecondary,
-      bgDark,
-    ],
-  ),
-  boxShadow: [
-    BoxShadow(
-      color: Colors.black.withOpacity(0.2),
-      spreadRadius: 2,
-      blurRadius: 6,
-      offset: Offset(4, 4),
+BoxDecoration roundedWithGradient(Malta city) {
+  return BoxDecoration(
+    borderRadius: BorderRadius.circular(10),
+    border: city.isFavorite
+        ? Border.all(color: Colors.white, width: 2)
+        : null,
+    gradient: const LinearGradient(
+      begin: Alignment.topCenter,
+      end: Alignment.bottomCenter,
+      colors: [
+        bgPrimary,
+        bgSecondary,
+        bgDark,
+      ],
     ),
-  ],
-);
+    boxShadow: [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.2),
+        spreadRadius: 2,
+        blurRadius: 6,
+        offset: const Offset(4, 4),
+      ),
+    ],
+  );
+}
 final BoxDecoration roundedGreenBorderDecoration = BoxDecoration(
   color: greenColor.withValues(alpha: 0.3),
   borderRadius: BorderRadius.circular(10),
@@ -153,4 +159,27 @@ final boxShadow = BoxShadow(
   color: Colors.grey.withValues(alpha: 0.2),
   blurRadius: 6,
   offset: Offset(0, 2),
+);
+final BoxDecoration  currenlocation=BoxDecoration(
+  borderRadius: BorderRadius.circular(10),
+  border:
+       Border.all(color: Colors.white, width: 2),
+
+  gradient: const LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      bgPrimary,
+      bgSecondary,
+      bgDark,
+    ],
+  ),
+  boxShadow: [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.2),
+      spreadRadius: 2,
+      blurRadius: 6,
+      offset: const Offset(4, 4),
+    ),
+  ],
 );

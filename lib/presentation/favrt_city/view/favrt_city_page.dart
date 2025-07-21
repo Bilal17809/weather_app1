@@ -7,7 +7,7 @@ import '../../../core/routes/routes_name.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_styles.dart';
 import '../../home/view/home_page.dart';
-import '../controller/favt_controller.dart';
+import '../../city/contrl/favt_controller.dart';
 
 class FavoriteCity extends StatefulWidget {
   const FavoriteCity({super.key});
@@ -132,7 +132,7 @@ class _FavoriteCityState extends State<FavoriteCity> {
                       padding: const EdgeInsets.only(bottom: 12, left: 10, right: 10),
                       child: Container(
                         height: 70,
-                        decoration: roundedwithgradent,
+
                         child: InkWell(
                           onTap: () {
                             ctr.setSelectedCity(city);

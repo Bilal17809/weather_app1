@@ -1,25 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:weather/core/routes/routes_name.dart';
-import 'package:weather/data/model/hourly_model.dart';
+import 'package:weather/presentation/home/view/sidebar.dart';
 import '../../../core/common/controller/controller.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_styles.dart';
-import '../../daily_forecast/contrl/daily_contrl.dart';
 import '../../daily_forecast/view/daily_cast_page.dart';
-import '../../hourly_forecast/contrl/hourly_contrl.dart';
 import '../../hourly_forecast/view/hourly_cast_page.dart';
+import '../../hourly_forecast/contrl/hourly_contrl.dart';
+import '../../daily_forecast/contrl/daily_contrl.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
+
   final CityController ctr = Get.put(CityController());
+
+  final hourlyCtrl = Get.find<HourlyForecastController>();
+  final dailyCtrl = Get.find<DailyForecastController>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      drawer: CustomDrawer(),
       appBar: AppBar(
         backgroundColor: bgDark2,
         automaticallyImplyLeading: false,
@@ -28,12 +31,21 @@ class HomeScreen extends StatelessWidget {
           final now = DateTime.now();
           final formattedDate = DateFormat('EEEE d MMMM').format(now);
 
+          final showCurrentLocation =
+              ctr.currentLocationName.value != 'Detecting...' &&
+                  !ctr.isCityManuallySelected.value;
+
+          final locationName =
+          showCurrentLocation ? ctr.currentLocationName.value : city?.city ?? 'Select city';
+
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Align(
-                alignment: Alignment.topLeft,
-                child: Icon(Icons.menu, color: kWhite, size: 28),
+              Builder(
+                builder: (context) => InkWell(
+                  onTap: () => Scaffold.of(context).openDrawer(),
+                  child: const Icon(Icons.menu, color: Colors.white, size: 28),
+                ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -43,13 +55,12 @@ class HomeScreen extends StatelessWidget {
                       Icon(Icons.location_on, color: kWhite, size: 17),
                       SizedBox(width: 5),
                       Text(
-                        city?.city ?? 'Select city',
+                        locationName,
                         style: context.textTheme.bodyLarge?.copyWith(
                           color: kWhite,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
-
                         overflow: TextOverflow.ellipsis,
                         maxLines: 1,
                       ),
@@ -64,14 +75,9 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              Align(
-                alignment: Alignment.topLeft,
-                child: InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, RoutesName.favorite);
-                  },
-                  child: Icon(Icons.add_circle_sharp, color: kWhite, size: 28),
-                ),
+              InkWell(
+                onTap: () => Navigator.pushNamed(context, RoutesName.citypage),
+                child: Icon(Icons.add_circle_sharp, color: kWhite, size: 28),
               ),
             ],
           );
@@ -86,50 +92,58 @@ class HomeScreen extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: 20),
-
                 SizedBox(height: 15),
+
+                // ✅ Weather icon and condition text from Hourly controller
                 Obx(() {
-                  final detail = Get.find<CityController>().details;
-                  print("🔍 detail length: ${detail.length}"); // DEBUG
-
-                  if (detail.isEmpty) return SizedBox();
-
-                  final d = detail.first;
-
+                  final detail = hourlyCtrl.currentLocationDetail.value;
+                  if (detail == null) return SizedBox();
                   return Column(
                     children: [
                       Image.network(
-                        d.conditionIcon,
+                        detail.conditionIcon,
                         width: 210,
-                        height: 120,
+                        height: 160,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Icon(Icons.error, color: kWhite);
-                        },
                       ),
                       SizedBox(height: 10),
                       Text(
-                        d.conditionText,
-                        style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 20),
+                        detail.conditionText,
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          color: kWhite,
+                          fontSize: 15,
+                        ),
                       ),
                     ],
                   );
                 }),
 
+                // ✅ Temperature from current weather controller
                 Obx(() {
                   final city = ctr.selectedCity.value;
+                  final showCurrentLocation =
+                      ctr.currentLocationName.value != 'Detecting...' &&
+                          !ctr.isCityManuallySelected.value;
+
+                  final temp = showCurrentLocation
+                      ? double.tryParse(hourlyCtrl.currentTemperature.value)
+                      : city?.temperature;
+
                   return Text(
-                    city?.temperature != null
-                        ? "${city!.temperature!.toStringAsFixed(1)}°"
+                    temp != null && temp != 0
+                        ? "${temp.toStringAsFixed(1)}°"
                         : "Loading...",
-                    style: context.textTheme.bodyLarge?.copyWith(fontSize: 50, color: dividerColor),
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      fontSize: 50,
+                      color: dividerColor,
+                    ),
                   );
                 }),
 
-                hourly_cast(),
                 SizedBox(height: 10),
-                DailyCastPage(),
+                HourlyCast(),       // ⏰ Hourly Forecast
+                SizedBox(height: 10),
+                DailyCastPage(),    // 📅 7-Day Forecast
               ],
             ),
           ),

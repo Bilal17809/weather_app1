@@ -1,36 +1,79 @@
-
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
+import 'package:intl/intl.dart';
 
+import '../../../core/common/controller/controller.dart';
 import '../../../core/routes/routes_name.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../hourly_forecast/contrl/hourly_contrl.dart';
 import '../contrl/daily_contrl.dart';
 
-class DailyCastPage extends StatelessWidget {
+class DailyCastPage extends StatefulWidget {
   const DailyCastPage({super.key});
+
+  @override
+  State<DailyCastPage> createState() => _DailyCastPageState();
+}
+
+class _DailyCastPageState extends State<DailyCastPage> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  // Called when returning to app
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _resetToTodayIfOnHome();
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _resetToTodayIfOnHome();
+  }
+
+  void _resetToTodayIfOnHome() {
+    final controller = Get.find<HourlyForecastController>();
+    final routeName = ModalRoute.of(context)?.settings.name;
+
+    if (routeName == '/') {
+      final lat = controller.currentLat.value;
+      final lng = controller.currentLng.value;
+
+      // Reset selected hour + fetch today's data
+      controller.setSelectedHour(null);
+      controller.fetchHourlyForecast(lat, lng);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(left: 10, right: 10),
-      child: Container(
-        child: Obx(() {
-          final controller = Get.find<DailyForecastController>();
-          final daily = controller.dailyList;
+      child: Obx(() {
+        final controller = Get.find<DailyForecastController>();
+        final daily = controller.dailyList;
 
-          print("📅 Daily forecast items: ${daily.length}"); // ✅ Debug log
+        print("📅 Daily forecast items: ${daily.length}");
 
-          if (daily.isEmpty) {
-            return Center(
-              child: Text(
-                "⚠️ Forecast data not available.",
-                style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 16),
-              ),
-            );
-          }
+        if (daily.isEmpty) {
+          return Center(
+            child: Text(
+              "⚠️ Forecast data not available.",
+              style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 16),
+            ),
+          );
+        }
 
           return SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -39,7 +82,6 @@ class DailyCastPage extends StatelessWidget {
                 final w = daily[index];
                 return InkWell(
                   onTap: () {
-                    controller.selectedDayIndex.value = index;
                     Navigator.pushNamed(context, RoutesName.weatherpage);
                   },
                   child: Padding(
