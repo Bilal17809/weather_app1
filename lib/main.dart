@@ -4,7 +4,8 @@ import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:get/get.dart';
 import 'package:weather/core/routes/routes.dart';
 import 'package:weather/core/routes/routes_name.dart';
-import 'package:weather/presentation/favrt_city/controller/favt_controller.dart';
+import 'package:weather/presentation/city/contrl/favt_controller.dart';
+
 import 'package:weather/presentation/favrt_city/view/flutter_overlay_window.dart'; // Your overlay widget
 import 'core/common/controller/controller.dart';
 Future<void> requestOverlayPermission() async {
@@ -21,6 +22,7 @@ Future<void> main() async {
 
   // Initialize GetX controllers
   Get.put(FavoriteController());
+
   Get.put(CityController());
 
   runApp(const MyApp());

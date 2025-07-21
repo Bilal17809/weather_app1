@@ -15,7 +15,6 @@ class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
 
   final CityController ctr = Get.put(CityController());
-
   final hourlyCtrl = Get.find<HourlyForecastController>();
   final dailyCtrl = Get.find<DailyForecastController>();
 
@@ -28,25 +27,25 @@ class HomeScreen extends StatelessWidget {
         automaticallyImplyLeading: false,
         title: Obx(() {
           final city = ctr.selectedCity.value;
-          final now = DateTime.now();
-          final formattedDate = DateFormat('EEEE d MMMM').format(now);
+          final controller = Get.find<DailyForecastController>();
 
-          final showCurrentLocation =
-              ctr.currentLocationName.value != 'Detecting...' &&
-                  !ctr.isCityManuallySelected.value;
+          final selectedDay = controller.dailyList.isNotEmpty
+              ? DateTime.parse(controller.dailyList[controller.selectedDayIndex.value].date)
+              : DateTime.now();
 
-          final locationName =
-          showCurrentLocation ? ctr.currentLocationName.value : city?.city ?? 'Select city';
+          final formattedDate = DateFormat('EEEE d MMMM').format(selectedDay);
 
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+
               Builder(
                 builder: (context) => InkWell(
                   onTap: () => Scaffold.of(context).openDrawer(),
                   child: const Icon(Icons.menu, color: Colors.white, size: 28),
                 ),
               ),
+              // SizedBox(width: 60,),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -55,7 +54,7 @@ class HomeScreen extends StatelessWidget {
                       Icon(Icons.location_on, color: kWhite, size: 17),
                       SizedBox(width: 5),
                       Text(
-                        locationName,
+                        city?.city ?? 'Select city',
                         style: context.textTheme.bodyLarge?.copyWith(
                           color: kWhite,
                           fontSize: 16,
@@ -68,16 +67,23 @@ class HomeScreen extends StatelessWidget {
                   ),
                   Text(
                     formattedDate,
-                    style: context.textTheme.bodyLarge?.copyWith(
-                      color: kWhite,
-                      fontSize: 12,
-                    ),
+                    style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 12),
                   ),
                 ],
               ),
-              InkWell(
-                onTap: () => Navigator.pushNamed(context, RoutesName.citypage),
-                child: Icon(Icons.add_circle_sharp, color: kWhite, size: 28),
+              // SizedBox(width: 60,),
+              Align(
+                alignment: Alignment.topRight,
+                child: InkWell(
+                  onTap: () {
+                    Navigator.pushNamed(context, RoutesName.citypage);
+                  },
+                  child: Icon(
+                    Icons.add_circle_sharp,
+                    color: kWhite,
+                    size: 28,
+                  ),
+                ),
               ),
             ],
           );
@@ -94,40 +100,38 @@ class HomeScreen extends StatelessWidget {
               children: [
                 SizedBox(height: 15),
 
-                // ✅ Weather icon and condition text from Hourly controller
+                // ✅ Weather icon and condition from current location
                 Obx(() {
-                  final detail = hourlyCtrl.currentLocationDetail.value;
-                  if (detail == null) return SizedBox();
+                  final detail = Get.find<CityController>().details;
+                  print("🔍 detail length: ${detail.length}"); // DEBUG
+
+                  if (detail.isEmpty) return SizedBox();
+
+                  final d = detail.first;
+
                   return Column(
                     children: [
                       Image.network(
-                        detail.conditionIcon,
+                        d.conditionIcon,
                         width: 210,
-                        height: 160,
+                        height: 120,
                         fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(Icons.error, color: kWhite);
+                        },
                       ),
                       SizedBox(height: 10),
                       Text(
-                        detail.conditionText,
-                        style: context.textTheme.bodyLarge?.copyWith(
-                          color: kWhite,
-                          fontSize: 15,
-                        ),
+                        d.conditionText,
+                        style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 20),
                       ),
                     ],
                   );
                 }),
 
-                // ✅ Temperature from current weather controller
+                // ✅ Temperature from current location
                 Obx(() {
-                  final city = ctr.selectedCity.value;
-                  final showCurrentLocation =
-                      ctr.currentLocationName.value != 'Detecting...' &&
-                          !ctr.isCityManuallySelected.value;
-
-                  final temp = showCurrentLocation
-                      ? double.tryParse(hourlyCtrl.currentTemperature.value)
-                      : city?.temperature;
+                  final temp = hourlyCtrl.currentTemperature.value;
 
                   return Text(
                     temp != null && temp != 0
@@ -141,9 +145,9 @@ class HomeScreen extends StatelessWidget {
                 }),
 
                 SizedBox(height: 10),
-                HourlyCast(),       // ⏰ Hourly Forecast
+                hourly_cast(),       // ⏰ Hourly Forecast
                 SizedBox(height: 10),
-                DailyCastPage(),    // 📅 7-Day Forecast
+                DailyCastPage(),     // 📅 7-Day Forecast
               ],
             ),
           ),

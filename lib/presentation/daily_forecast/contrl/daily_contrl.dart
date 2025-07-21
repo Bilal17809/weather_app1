@@ -2,17 +2,18 @@ import 'package:get/get.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
-import '../../../core/common/controller/controller.dart';
 import '../../../data/model/forecast.dart';
 import '../../weather/contl/weather _ctr.dart';
 
 class DailyForecastController extends GetxController {
   RxList<DailyForecast> dailyList = <DailyForecast>[].obs;
-  final selectedDayIndex = 0.obs; // or selectedDate = Rx<DateTime>()
+  final selectedDayIndex = 0.obs;
 
+  /// ✅ Coordinates for current location
+  var currentLat = 0.0.obs;
+  var currentLng = 0.0.obs;
 
-
-
+  /// ✅ Fetch daily forecast for any given lat/lng
   Future<void> fetchDailyForecast(double lat, double lng) async {
     final url = Uri.parse(
       'http://api.weatherapi.com/v1/forecast.json?key=8e1b9cfeaccc48c4b2b85154230304&q=$lat,$lng&days=7&aqi=no&alerts=no',
@@ -30,8 +31,6 @@ class DailyForecastController extends GetxController {
         dailyList.refresh();
 
         print("✅ Got ${forecast.forecastDays.length} daily items from API");
-
-
       } else {
         print("❌ Daily API error: ${response.statusCode}");
       }
@@ -40,12 +39,24 @@ class DailyForecastController extends GetxController {
     }
   }
 
+  /// ✅ Fetch forecast using stored current location
+  Future<void> fetchCurrentLocationForecast() async {
+    if (currentLat.value == 0.0 || currentLng.value == 0.0) {
+      print("⚠️ Coordinates not set for current location forecast");
+      return;
+    }
+
+    await fetchDailyForecast(currentLat.value, currentLng.value);
+  }
+
+  /// ✅ Save forecast to SharedPreferences
   Future<void> saveWeeklyToPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonList = dailyList.map((d) => jsonEncode(d.toJson())).toList();
     await prefs.setStringList('weekly_forecast', jsonList);
   }
 
+  /// ✅ Load forecast from SharedPreferences
   Future<void> loadWeeklyFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final List<String>? jsonList = prefs.getStringList('weekly_forecast');
@@ -54,11 +65,23 @@ class DailyForecastController extends GetxController {
       final List<DailyForecast> loaded = jsonList
           .map((str) => DailyForecast.fromFlatJson(jsonDecode(str)))
           .toList();
+
       dailyList.assignAll(loaded);
       dailyList.refresh();
       print("✅ Loaded ${loaded.length} weekly forecast items from storage");
     } else {
       print("⚠️ No weekly forecast data found in storage");
+    }
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadWeeklyFromPrefs();
+
+    // Optionally auto-fetch if coordinates are set
+    if (currentLat.value != 0.0 && currentLng.value != 0.0) {
+      fetchCurrentLocationForecast();
     }
   }
 }

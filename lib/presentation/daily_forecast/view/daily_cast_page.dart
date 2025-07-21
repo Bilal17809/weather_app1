@@ -50,11 +50,12 @@ class _DailyCastPageState extends State<DailyCastPage> with WidgetsBindingObserv
       final lat = controller.currentLat.value;
       final lng = controller.currentLng.value;
 
-      // Reset selected hour + fetch today's data
-      controller.setSelectedHour(null);
+      final now = DateFormat('hh:00 a').format(DateTime.now());
+      controller.setSelectedHour(now);
       controller.fetchHourlyForecast(lat, lng);
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -171,7 +172,7 @@ class _DailyCastPageState extends State<DailyCastPage> with WidgetsBindingObserv
         }),
 
 
-      ),
-    );
+      );
+
   }
 }

@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:geocoding/geocoding.dart';
+
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -25,6 +26,9 @@ class CityController extends GetxController {
   RxBool loading = true.obs;
   Rx<Malta?> selectedCity = Rx<Malta?>(null);
   RxList<WeatherDetails>details = <WeatherDetails>[].obs;
+  var isCityManuallySelected = false.obs;
+  var currentLocationName = ''.obs;
+  var currentLocationTemp = 0.0.obs;
   // Instance of the newly created controllers
   final DailyForecastController dailyForecastController = Get.put(DailyForecastController());
   final HourlyForecastController hourlyForecastController = Get.put(HourlyForecastController());
@@ -63,7 +67,7 @@ class CityController extends GetxController {
   Future<void> fetchWeatherDetails(double lat, double lng) async {
     final url = Uri.parse(
       'http://api.weatherapi.com/v1/forecast.json?key=8e1b9cfeaccc48c4b2b85154230304&q=$lat,$lng&days=1&aqi=no&alerts=no',
-        'http://api.weatherapi.com/v1/forecast.json?key=07e14a15571440079f5110300250407&q=$lat,$lng&days=7&aqi=no&alerts=no'
+
 
     );
 

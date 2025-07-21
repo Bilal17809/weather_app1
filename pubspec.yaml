@@ -43,6 +43,7 @@ dependencies:
   loading_animations: ^2.2.0
   flutter_overlay_window: ^0.5.0
   geolocator: ^14.0.2
+  geocoding: ^4.0.0
 
 
 dev_dependencies:

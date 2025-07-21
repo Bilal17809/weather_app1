@@ -25,7 +25,7 @@ class weather extends StatelessWidget {
           final controller = Get.find<DailyForecastController>();
 
           final selectedDay = controller.dailyList.isNotEmpty
-              ? controller.dailyList[controller.selectedDayIndex.value].date as DateTime
+              ? DateTime.parse(controller.dailyList[controller.selectedDayIndex.value].date)
               : DateTime.now();
 
           final formattedDate = DateFormat('EEEE d MMMM').format(selectedDay);
@@ -75,6 +75,7 @@ class weather extends StatelessWidget {
             ],
           );
         }),
+
 
 
       ),

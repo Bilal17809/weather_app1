@@ -9,12 +9,23 @@ import '../../../data/model/hourly_model.dart';
 
 class HourlyForecastController extends GetxController {
   RxList<HourlyWeather> hourlyList = <HourlyWeather>[].obs;
+
   RxInt selectedHourIndex = 0.obs;
+  var currentLat = 0.0.obs;
+  var currentLng = 0.0.obs;
+  var currentLocationDetail = Rxn<HourlyWeather>();
+  var currentTemperature = 0.0.obs;
+  var selectedHourTime = ''.obs;
+
   final ScrollController scrollController = ScrollController();
 
   /// ✅ Converts current time to Malta local time (UTC+2)
   DateTime getMaltaTime() {
     return DateTime.now().toUtc().add(const Duration(hours: 2));
+  }
+
+  void setSelectedHour(String hour) {
+    selectedHourTime.value = hour;
   }
 
   void autoScrollToCurrentHour() {
@@ -26,7 +37,6 @@ class HourlyForecastController extends GetxController {
 
     for (int i = 0; i < hourlyList.length; i++) {
       final h = hourlyList[i];
-
       final apiHour = h.rawTime.hour;
 
       if (apiHour == now.hour) {
@@ -52,17 +62,11 @@ class HourlyForecastController extends GetxController {
     autoScrollToCurrentHour();
   }
 
-  @override
-  void onInit() {
-    super.onInit();
-    loadHourlyFromPrefs();
-  }
-
   void updateSelectedHour(int index) {
     selectedHourIndex.value = index;
   }
 
-  /// ✅ Fetch 24 hours from 00:00 to 23:00
+  /// ✅ Fetch hourly forecast for a specific lat/lng
   Future<void> fetchHourlyForecast(double lat, double lng) async {
     print("📡 fetchHourlyForecast() called for $lat, $lng");
 
@@ -82,8 +86,8 @@ class HourlyForecastController extends GetxController {
         final now = DateTime.now();
         final today = DateTime(now.year, now.month, now.day);
 
-        final start = today; // 00:00 today
-        final end = today.add(const Duration(hours: 23)); // 23:00 today
+        final start = today;
+        final end = today.add(const Duration(hours: 23));
 
         final filteredHours = allHours
             .where((h) {
@@ -95,6 +99,13 @@ class HourlyForecastController extends GetxController {
             .toList();
 
         hourlyList.value = filteredHours;
+
+        // Save current condition and temperature
+        if (filteredHours.isNotEmpty) {
+          currentLocationDetail.value = filteredHours.first;
+          currentTemperature.value = filteredHours.first.temperature;
+        }
+
         await saveHourlyToPrefs();
         hourlyList.refresh();
 
@@ -109,18 +120,17 @@ class HourlyForecastController extends GetxController {
     }
   }
 
-  Future<void> saveHourlyToPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
+  /// ✅ Fetch hourly forecast using stored currentLat and currentLng
+  Future<void> fetchCurrentLocationForecast() async {
+    if (currentLat.value == 0.0 || currentLng.value == 0.0) {
+      print("⚠️ Location coordinates not set.");
+      return;
+    }
 
-    final List<String> hourlyJsonList = hourlyList.map((h) {
-      return jsonEncode(h.toJson());
-    }).toList();
-
-    print("💾 Saving ${hourlyJsonList.length} hourly items to SharedPreferences");
-
-    await prefs.setStringList('hourly_data', hourlyJsonList);
+    await fetchHourlyForecast(currentLat.value, currentLng.value);
   }
 
+  /// ✅ Load data from SharedPreferences
   Future<void> loadHourlyFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     final List<String>? hourlyJsonList = prefs.getStringList('hourly_data');
@@ -133,9 +143,40 @@ class HourlyForecastController extends GetxController {
       hourlyList.assignAll(loadedHourly);
       hourlyList.refresh();
 
+      if (loadedHourly.isNotEmpty) {
+        currentLocationDetail.value = loadedHourly.first;
+        currentTemperature.value = loadedHourly.first.temperature;
+      }
+
       print("✅ Loaded ${loadedHourly.length} hourly items from storage");
     } else {
       print("⚠️ No hourly forecast data found in SharedPreferences");
     }
   }
+
+  /// ✅ Save data to SharedPreferences
+  Future<void> saveHourlyToPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+
+    final List<String> hourlyJsonList = hourlyList.map((h) {
+      return jsonEncode(h.toJson());
+    }).toList();
+
+    print("💾 Saving ${hourlyJsonList.length} hourly items to SharedPreferences");
+
+    await prefs.setStringList('hourly_data', hourlyJsonList);
+  }
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadHourlyFromPrefs();
+
+    // Optional: auto-fetch if coordinates are already set
+    if (currentLat.value != 0.0 && currentLng.value != 0.0) {
+      fetchCurrentLocationForecast();
+    }
+  }
 }
+
+
