@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
-
-import '../../../common/controller/controller.dart';
+import 'package:weather/presentation/hourly_forecast/contrl/hourly_contrl.dart';
+import 'package:weather/presentation/weather/view/w_forter.dart';
+import '../../../core/common/controller/controller.dart' show CityController;
 import '../../../core/routes/routes_name.dart';
-import '../../city/contrl/city_contrl.dart';
-import '../../city/view/city.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_styles.dart';
 
 class weather extends StatelessWidget {
   weather({super.key});
@@ -14,11 +15,11 @@ class weather extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-      return Scaffold(
+    return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xFF001B31),
         automaticallyImplyLeading: false,
-        title:  Obx(() {
+        title: Obx(() {
           final city = ctr.selectedCity.value;
           final now = DateTime.now();
           final formattedDate = DateFormat('EEEE d MMMM').format(now);
@@ -26,20 +27,18 @@ class weather extends StatelessWidget {
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Align(
-                alignment: Alignment.topLeft,
-              ),
+              Align(alignment: Alignment.topLeft),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.location_on, color: Colors.white, size: 17),
+                      Icon(Icons.location_on, color: kWhite, size: 17),
                       SizedBox(width: 5),
                       Text(
                         city?.city ?? 'Select city',
-                        style: TextStyle(
-                          color: Colors.white,
+                        style: context.textTheme.bodyLarge?.copyWith(
+                          color: kWhite,
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                         ),
@@ -50,7 +49,7 @@ class weather extends StatelessWidget {
                   ),
                   Text(
                     formattedDate,
-                    style: TextStyle(color: Colors.white, fontSize: 12),
+                    style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 12),
                   ),
                 ],
               ),
@@ -58,11 +57,11 @@ class weather extends StatelessWidget {
                 alignment: Alignment.topLeft,
                 child: InkWell(
                   onTap: () {
-                    Navigator.pushNamed(context, RoutesName.citypage);
+                    Navigator.pushNamed(context, RoutesName.favorite);
                   },
                   child: Icon(
                     Icons.add_circle_sharp,
-                    color: Colors.white,
+                    color: kWhite,
                     size: 28,
                   ),
                 ),
@@ -72,45 +71,63 @@ class weather extends StatelessWidget {
         }),
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [
-              Color(0xFF001B31),
-              Color(0xFF003847),
-              Color(0xFF00A67D),
-              Color(0xFF009072),
-            ],
-          ),
-        ),
+        decoration: bgwithgradent,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             SizedBox(height: 20),
 
             SizedBox(height: 25),
-            Image.asset(
-              "assets/images/weather5.png",
-              width: 200, // set your desired width
-              height: 180, // set your desired height
-              fit:
-              BoxFit
-                  .cover, // optional, defines how the image should be fitted
-            ),
-            SizedBox(height: 10,),
+            Obx(() {
+              final detail = Get.find<CityController>().details;
+              print("🔍 detail length: ${detail.length}"); // DEBUG
+
+              if (detail.isEmpty) return SizedBox();
+
+              final d = detail.first;
+
+              return Column(
+                children: [
+                  Image.network(
+                    d.conditionIcon,
+                    width: 210,
+                    height: 120,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Icon(Icons.error, color: kWhite);
+                    },
+                  ),
+                  SizedBox(height: 10),
+                  Text(
+                    d.conditionText,
+                    style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 20),
+                  ),
+                ],
+              );
+            }),
+            SizedBox(height: 10),
 
             Divider(
-              color: Colors.grey,    // Line color
-              thickness: 1,          // Line thickness
+              color:textGreyColor, // Line color
+              thickness: 1, // Line thickness
             ),
             Padding(
-              padding: const EdgeInsets.only(left: 50,right: 30),
-              child:Obx(() {
+              padding: const EdgeInsets.only(left: 50, right: 30),
+              child: Obx(() {
                 final detail = Get.find<CityController>().details;
-                if (detail.isEmpty) return Center(child: Text("c", style: TextStyle(color: Colors.white)));
 
-                final d = detail.first; // just show first entry's details
+                print("🔍 details length: ${detail.length}");
+
+                if (detail.isEmpty) {
+                  return Center(
+                    child: Text(
+                      "no data",
+                      style: context.textTheme.bodyLarge?.copyWith(color: kWhite),
+                    ),
+                  );
+                }
+
+                final d = detail.first;
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,105 +141,29 @@ class weather extends StatelessWidget {
                   ],
                 );
               }),
-
             ),
-
-
 
             Divider(
-              color: Colors.grey,    // Line color
-              thickness: 1,          // Line thickness
+              color: textGreyColor, // Line color
+              thickness: 1, // Line thickness
             ),
-            Obx(() {
-              final hourly = Get.find<CityController>().hourlyList;
-
-
-              if (hourly.isEmpty) {
-                return Center(
-                  child: CircularProgressIndicator(
-                    color: Color(0xFF00A67D),
-                  ),
-                );
-              }
-
-              return SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: List.generate(5, (index) {
-                    final h = hourly[index];
-                  // Safe fallback
-
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                      ),
-                      child: Column(
-                        children: [
-                          SizedBox(height: 9),
-                          Image.network(
-                            h.icon,
-                            width: 50,
-                            height: 50,
-                            fit: BoxFit.cover,
-                          ),
-                          SizedBox(height: 10),
-                          Text(
-                            h.time,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 13,
-                            ),
-                          ),
-                          Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: "${h.temperature.round()}",
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                WidgetSpan(
-                                  child: Transform.translate(
-                                    offset: const Offset(2, 1),
-                                    child: Text(
-                                      '°',
-                                      style: TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  }),
-                ),
-              );
-            }),
+            Weather_forter(),
             SizedBox(height: 10),
-
           ],
         ),
       ),
     );
   }
 }
+
 Widget buildInfoRow(String label, String value) {
   return Padding(
     padding: const EdgeInsets.only(bottom: 10),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(color: Colors.white)),
-        Text(value, style: TextStyle(color: Colors.white)),
+        Text(label, style: TextStyle(color: kWhite)),
+        Text(value, style: TextStyle(color: kWhite)),
       ],
     ),
   );

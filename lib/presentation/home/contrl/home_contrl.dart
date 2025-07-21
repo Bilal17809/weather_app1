@@ -1,12 +1,9 @@
 import 'dart:convert';
-
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 
-import '../../../data/model/model.dart';
+import '../../../data/model/city_model.dart';
 
 class home_ctr extends GetxController {
   RxList<Malta> home_list = <Malta>[].obs;

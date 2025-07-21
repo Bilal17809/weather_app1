@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:get/get_state_manager/src/simple/get_controllers.dart';
 
-import '../../../data/model/model.dart';
+import '../../../data/model/city_model.dart';
 
 
 class Controller extends GetxController {
@@ -21,4 +21,5 @@ class Controller extends GetxController {
     final List<dynamic> jsonData = json.decode(jsonString);
     cityList.value = jsonData.map((e) => Malta.fromJson(e)).toList();
   }
+
 }
