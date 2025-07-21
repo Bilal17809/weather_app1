@@ -1,7 +1,10 @@
 import 'dart:convert';
-
 import 'package:http/http.dart' as http;
 
+// Use these for weather
+
+// 8e1b9cfeaccc48c4b2b85154230304
+// https://www.weatherapi.com
 Future<double?> fetchCityTemperature(double lat, double lon) async {
   final apiKey = '7d7cead5f21da78ea50ea22ff44f5797';
   final url =
