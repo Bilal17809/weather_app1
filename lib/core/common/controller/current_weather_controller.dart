@@ -1,4 +1,3 @@
-// current_weather_controller.dart
 import 'dart:convert';
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
@@ -19,31 +18,61 @@ class CurrentWeatherController extends GetxController {
   Future<void> getCurrentLocationAndFetchWeather() async {
     try {
       bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) return;
+      if (!serviceEnabled) {
+        print('❌ Location services are disabled.');
+        return;
+      }
 
       LocationPermission permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
         permission = await Geolocator.requestPermission();
-        if (permission == LocationPermission.deniedForever) return;
+        if (permission == LocationPermission.denied) {
+          print('❌ Location permission denied.');
+          return;
+        }
       }
 
-      final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+      if (permission == LocationPermission.deniedForever) {
+        print('❌ Location permission permanently denied.');
+        return;
+      }
 
+      // ✅ Try to get location with longer timeout
+      Position position;
+      try {
+        position = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+        ).timeout(const Duration(seconds: 30));
+      } catch (e) {
+        print('⚠️ Primary location fetch failed: $e');
+        // ✅ Fallback to last known position
+        final fallback = await Geolocator.getLastKnownPosition();
+        if (fallback != null) {
+          print('📍 Using last known location');
+          position = fallback;
+        } else {
+          print('❌ No last known location available');
+          return;
+        }
+      }
+
+      print('📍 Location: ${position.latitude}, ${position.longitude}');
       await fetchCurrentWeather(position.latitude, position.longitude);
     } catch (e) {
-      print('❌ Error getting current location: $e');
+      print('❌ General location error: $e');
     }
   }
 
+
   Future<void> fetchCurrentWeather(double lat, double lng) async {
     final url = Uri.parse(
-        'http://api.weatherapi.com/v1/current.json?key=07e14a15571440079f5110300250407&q=$lat,$lng');
+      'http://api.weatherapi.com/v1/forecast.json?key=8e1b9cfeaccc48c4b2b85154230304&q=$lat,$lng&days=1&aqi=no&alerts=no',
+    );
 
     try {
       final response = await http.get(url);
       if (response.statusCode == 200) {
+        print('📦 Weather API Response: ${response.body}');
         final data = jsonDecode(response.body);
 
         currentTemperature.value = data['current']['temp_c'].toString();
@@ -51,7 +80,7 @@ class CurrentWeatherController extends GetxController {
         conditionText.value = data['current']['condition']['text'];
         iconUrl.value = "https:${data['current']['condition']['icon']}";
 
-        print("✅ Current weather fetched: ${currentTemperature.value}°C");
+        print("✅ Weather loaded: ${cityName.value} - ${currentTemperature.value}°C");
       } else {
         print('❌ API Error: ${response.statusCode}');
       }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:weather/core/routes/routes_name.dart';
 
-import '../../../core/common/controller/CurrentWeatherController.dart';
+import '../../../core/common/controller/current_weather_controller.dart';
 import '../../../core/common/controller/controller.dart';
 import '../../../core/common_widgets/overlay_widget.dart';
 import '../../../core/theme/app_colors.dart';
@@ -50,7 +50,8 @@ class _CityNameState extends State<CityName> {
 
               // Fetch location weather
               Get.find<CurrentWeatherController>().getCurrentLocationAndFetchWeather();
-              // Get.find<DailyForecastController>().getCurrentLocationAndFetchDaily();
+              // Get.find<DailyForecastController>().getCurrentLocationAndFetchDaily()
+              Get.find<CityController>().loadCityPreview();
               // Navigate to home screen
               Navigator.pushNamed(context, RoutesName.homePage);
             },

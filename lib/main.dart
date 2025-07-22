@@ -6,8 +6,10 @@ import 'package:weather/core/routes/routes.dart';
 import 'package:weather/core/routes/routes_name.dart';
 import 'package:weather/presentation/city/contrl/favt_controller.dart';
 
-import 'package:weather/presentation/favrt_city/view/flutter_overlay_window.dart'; // Your overlay widget
+
+import 'Example.dart';
 import 'core/common/controller/controller.dart';
+import 'core/common/controller/current_weather_controller.dart';
 Future<void> requestOverlayPermission() async {
   if (!await FlutterOverlayWindow.isPermissionGranted()) {
     await FlutterOverlayWindow.requestPermission();
@@ -22,7 +24,7 @@ Future<void> main() async {
 
   // Initialize GetX controllers
   Get.put(FavoriteController());
-
+  Get.put(CurrentWeatherController());
   Get.put(CityController());
 
   runApp(const MyApp());
@@ -52,6 +54,7 @@ class _MyAppState extends State<MyApp> {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.teal),
       ),
+      // home: weather_curr_loc(),
       initialRoute: RoutesName.splashPage,
       onGenerateRoute: Routes.generateRoute,
     );

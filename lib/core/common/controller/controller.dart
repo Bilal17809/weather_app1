@@ -24,11 +24,11 @@ class CityController extends GetxController {
   RxList<Malta> filteredList = <Malta>[].obs;
   RxString lastQuery = ''.obs;
   RxBool loading = true.obs;
+
   Rx<Malta?> selectedCity = Rx<Malta?>(null);
   RxList<WeatherDetails>details = <WeatherDetails>[].obs;
   var isCityManuallySelected = false.obs;
-  var currentLocationName = ''.obs;
-  var currentLocationTemp = 0.0.obs;
+
   // Instance of the newly created controllers
   final DailyForecastController dailyForecastController = Get.put(DailyForecastController());
   final HourlyForecastController hourlyForecastController = Get.put(HourlyForecastController());
@@ -43,10 +43,12 @@ class CityController extends GetxController {
       await restoreSelectedPreview();
       final city = selectedCity.value;
       if (city != null) {
+
         await fetchWeatherDetails(city.lat, city.lng);
       }
     });
     filterCities('');
+    loadCityPreview();
     dailyForecastController.loadWeeklyFromPrefs();
     hourlyForecastController.loadHourlyFromPrefs();
   }
@@ -54,16 +56,21 @@ class CityController extends GetxController {
 
 
   Future<void> setSelectedCity(Malta city) async {
-    isCityManuallySelected.value = true;
-    selectedCity.value = city;
+    isCityManuallySelected.value = true;                // Mark city as manually selected
+    selectedCity.value = city;                          // Update selected city (observable)
 
-    // Fetch daily and hourly forecasts
+    // Fetch forecast data
     await dailyForecastController.fetchDailyForecast(city.lat, city.lng);
     await hourlyForecastController.fetchHourlyForecast(city.lat, city.lng);
-    await fetchWeatherDetails(city.lat, city.lng);
-    // Save selected city preview to preferences
-    await saveCityPreview(CityModel(city: city.city, temperature: city.temperature ?? 0.0));
+    await fetchWeatherDetails(city.lat, city.lng);      // Possibly for current weather
+
+    // Save city preview for restoring later
+    await saveCityPreview(CityModel(
+      city: city.city,
+      temperature: city.temperature ?? 0.0,
+    ));
   }
+
   Future<void> fetchWeatherDetails(double lat, double lng) async {
     final url = Uri.parse(
       'http://api.weatherapi.com/v1/forecast.json?key=8e1b9cfeaccc48c4b2b85154230304&q=$lat,$lng&days=1&aqi=no&alerts=no',
@@ -99,58 +106,6 @@ class CityController extends GetxController {
           .where((city) =>
           city.city.toLowerCase().contains(query.toLowerCase()))
           .toList();
-    }
-  }
-
-  Future<void> fetchLocation() async {
-    try {
-      // Get current GPS position
-      Position position = await getCurrentLocation();
-      print('📍 Location: ${position.latitude}, ${position.longitude}');
-
-      // Get city name using reverse geocoding
-      List<Placemark> placemarks = await placemarkFromCoordinates(
-        position.latitude,
-        position.longitude,
-      );
-
-      String cityName = placemarks.first.locality ?? 'Unknown';
-      currentLocationName.value = cityName;
-
-      // Fetch temperature from API
-      double? temp = await fetchCityTemperature(position.latitude, position.longitude);
-      if (temp == null) {
-        print("❌ Could not fetch temperature");
-        return;
-      }
-
-      // Force refresh value
-      currentLocationTemp.value = -1;
-      currentLocationTemp.value = temp;
-      print("🌡️ $cityName: $temp°C");
-
-      // Try to match this city from loaded list
-      final matched = cityList.firstWhereOrNull(
-            (c) => c.city.toLowerCase() == cityName.toLowerCase(),
-      );
-
-      if (matched != null) {
-        matched.temperature = temp;
-
-        selectedCity.value = matched;
-
-        // Fetch full forecast and override preview
-        await dailyForecastController.fetchDailyForecast(matched.lat, matched.lng);
-        await hourlyForecastController.fetchHourlyForecast(matched.lat, matched.lng);
-        await fetchWeatherDetails(matched.lat, matched.lng);
-        await saveCityPreview(CityModel(city: matched.city, temperature: matched.temperature ?? 0.0));
-      } else {
-        print("⚠️ City not found in JSON list: $cityName");
-      }
-    } catch (e) {
-      print("❌ Error in fetchLocation: $e");
-      currentLocationName.value = 'Location not available';
-      currentLocationTemp.value = 0.0;
     }
   }
 

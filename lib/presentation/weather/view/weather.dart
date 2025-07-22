@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:weather/presentation/hourly_forecast/contrl/hourly_contrl.dart';
 import 'package:weather/presentation/weather/view/w_forter.dart';
 import '../../../core/common/controller/controller.dart' show CityController;
+import '../../../core/common/controller/current_weather_controller.dart';
 import '../../../core/routes/routes_name.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_styles.dart';
@@ -13,7 +14,8 @@ import '../../daily_forecast/contrl/daily_contrl.dart';
 class weather extends StatelessWidget {
   weather({super.key});
   final CityController ctr = Get.put(CityController());
-
+  final cctr = Get.find<CurrentWeatherController>();
+  final forecastCtr = Get.find<DailyForecastController>();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,11 +23,8 @@ class weather extends StatelessWidget {
         backgroundColor: Color(0xFF001B31),
         automaticallyImplyLeading: false,
         title: Obx(() {
-          final city = ctr.selectedCity.value;
-          final controller = Get.find<DailyForecastController>();
-
-          final selectedDay = controller.dailyList.isNotEmpty
-              ? DateTime.parse(controller.dailyList[controller.selectedDayIndex.value].date)
+          final selectedDay = forecastCtr.dailyList.isNotEmpty
+              ? DateTime.parse(forecastCtr.dailyList[forecastCtr.selectedDayIndex.value].date)
               : DateTime.now();
 
           final formattedDate = DateFormat('EEEE d MMMM').format(selectedDay);
@@ -33,43 +32,41 @@ class weather extends StatelessWidget {
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Align(alignment: Alignment.topLeft),
+             SizedBox(width: 40,),
+
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.location_on, color: kWhite, size: 17),
-                      SizedBox(width: 5),
-                      Text(
-                        city?.city ?? 'Select city',
-                        style: context.textTheme.bodyLarge?.copyWith(
-                          color: kWhite,
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                      ),
+                      const Icon(Icons.location_on, color: Colors.white, size: 17),
+                      const SizedBox(width: 5),
+                      Obx(() {
+                        final cityName = cctr.cityName.value;
+                        return Text(
+                          cityName.isNotEmpty ? cityName : 'Locating...',
+                          style: context.textTheme.bodyLarge?.copyWith(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        );
+                      }),
                     ],
                   ),
                   Text(
                     formattedDate,
-                    style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 12),
+                    style: context.textTheme.bodyLarge?.copyWith(color: Colors.white, fontSize: 12),
                   ),
                 ],
               ),
               Align(
-                alignment: Alignment.topLeft,
+                alignment: Alignment.topRight,
                 child: InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, RoutesName.favorite);
-                  },
-                  child: Icon(
-                    Icons.add_circle_sharp,
-                    color: kWhite,
-                    size: 28,
-                  ),
+                  onTap: () => Navigator.pushNamed(context, RoutesName.citypage),
+                  child: const Icon(Icons.add_circle_sharp, color: Colors.white, size: 28),
                 ),
               ),
             ],
@@ -91,30 +88,35 @@ class weather extends StatelessWidget {
               final detail = Get.find<CityController>().details;
               print("🔍 detail length: ${detail.length}"); // DEBUG
 
-              if (detail.isEmpty) return SizedBox();
-
-              final d = detail.first;
+              final icon = cctr.iconUrl.value;
+              final condition = cctr.conditionText.value;
+              final temp = cctr.currentTemperature.value;
 
               return Column(
                 children: [
-                  Image.network(
-                    d.conditionIcon,
-                    width: 210,
-                    height: 120,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.error, color: kWhite);
-                    },
-                  ),
-                  SizedBox(height: 10),
+                  if (icon.isNotEmpty)
+                    Image.network(
+                      icon,
+                      width: 210,
+                      height: 180,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Icon(Icons.error, color: kWhite);
+                      },
+                    ),
+
+                  const SizedBox(height: 10),
                   Text(
-                    d.conditionText,
-                    style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 20),
+                    condition.isNotEmpty ? condition : 'Fetching...',
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      color: Colors.white,
+                      fontSize: 20,
+                    ),
                   ),
                 ],
               );
             }),
-            SizedBox(height: 10),
+            SizedBox(height: 8),
 
             Divider(
               color:textGreyColor, // Line color
@@ -157,7 +159,7 @@ class weather extends StatelessWidget {
               thickness: 1, // Line thickness
             ),
             Weather_forter(),
-            SizedBox(height: 10),
+            SizedBox(height: 8),
           ],
         ),
       ),
