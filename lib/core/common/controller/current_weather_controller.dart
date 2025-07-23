@@ -1,13 +1,16 @@
-import 'dart:convert';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
+
+import '../../../presentation/weather/contl/weather_service.dart';
 
 class CurrentWeatherController extends GetxController {
   var currentTemperature = ''.obs;
   var cityName = ''.obs;
   var conditionText = ''.obs;
   var iconUrl = ''.obs;
+  final RxDouble currentLng=0.0.obs;
+  final RxDouble currentLat =0.0.obs;
 
   @override
   void onInit() {
@@ -57,35 +60,18 @@ class CurrentWeatherController extends GetxController {
       }
 
       print('📍 Location: ${position.latitude}, ${position.longitude}');
-      await fetchCurrentWeather(position.latitude, position.longitude);
+      await fetchFullForecastForCurrentLocation();
     } catch (e) {
       print('❌ General location error: $e');
     }
   }
-
-
-  Future<void> fetchCurrentWeather(double lat, double lng) async {
-    final url = Uri.parse(
-      'http://api.weatherapi.com/v1/forecast.json?key=8e1b9cfeaccc48c4b2b85154230304&q=$lat,$lng&days=1&aqi=no&alerts=no',
-    );
-
-    try {
-      final response = await http.get(url);
-      if (response.statusCode == 200) {
-        print('📦 Weather API Response: ${response.body}');
-        final data = jsonDecode(response.body);
-
-        currentTemperature.value = data['current']['temp_c'].toString();
-        cityName.value = data['location']['name'];
-        conditionText.value = data['current']['condition']['text'];
-        iconUrl.value = "https:${data['current']['condition']['icon']}";
-
-        print("✅ Weather loaded: ${cityName.value} - ${currentTemperature.value}°C");
-      } else {
-        print('❌ API Error: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('❌ Exception fetching weather: $e');
+  Future<void> fetchFullForecastForCurrentLocation() async {
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity == ConnectivityResult.none) {
+      print('📴 Offline – skipping API fetch');
+      return;
     }
+
+    await WeatherForecastService.fetchWeatherForecast(currentLat.value, currentLng.value);
   }
 }

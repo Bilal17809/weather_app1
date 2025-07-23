@@ -29,7 +29,7 @@ class _Weather_forterState extends State<Weather_forter> {
   Widget build(BuildContext context) {
     return  Obx(() {
       final hourly = controller.hourlyList;
-      final selectedIndex = controller.selectedHourIndex.value;
+
 
       if (hourly.isEmpty) {
         return Center(
@@ -46,7 +46,7 @@ class _Weather_forterState extends State<Weather_forter> {
         child: Row(
           children: List.generate(hourly.length, (index) {
             final h = hourly[index];
-            final isSelected = index == selectedIndex;
+
 
             return Padding(
               padding: const EdgeInsets.only(left: 20,top: 5, bottom: 5),

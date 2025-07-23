@@ -1,52 +1,37 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
 import '../../../data/model/forecast.dart';
-import '../../weather/contl/weather _ctr.dart';
+import '../../weather/contl/weather_service.dart';
 
 class DailyForecastController extends GetxController {
   RxList<DailyForecast> dailyList = <DailyForecast>[].obs;
   final selectedDayIndex = 0.obs;
 
   /// ✅ Coordinates for current location
-  var currentLat = 0.0.obs;
-  var currentLng = 0.0.obs;
+  final RxDouble Lat = 0.0.obs;
+  final RxDouble Lng = 0.0.obs;
 
   /// ✅ Fetch daily forecast for any given lat/lng
-  Future<void> fetchDailyForecast(double lat, double lng) async {
-    final url = Uri.parse(
-      'http://api.weatherapi.com/v1/forecast.json?key=8e1b9cfeaccc48c4b2b85154230304&q=$lat,$lng&days=7&aqi=no&alerts=no',
-    );
-
-    try {
-      final response = await http.get(url).timeout(const Duration(seconds: 10));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final forecast = WeatherForecastResponse.fromJson(data);
-
-        dailyList.value = forecast.forecastDays;
-        await saveWeeklyToPrefs();
-        dailyList.refresh();
-
-        print("✅ Got ${forecast.forecastDays.length} daily items from API");
-      } else {
-        print("❌ Daily API error: ${response.statusCode}");
-      }
-    } catch (e) {
-      print("❌ Exception in fetchDailyForecast: $e");
+  Future<void> fetchFullForecastForCurrentLocation() async {
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity == ConnectivityResult.none) {
+      print('📴 Offline – skipping API fetch');
+      return;
     }
+    await WeatherForecastService.fetchWeatherForecast(Lat.value, Lng.value);
   }
+
 
   /// ✅ Fetch forecast using stored current location
   Future<void> fetchCurrentLocationForecast() async {
-    if (currentLat.value == 0.0 || currentLng.value == 0.0) {
+    if (Lat.value == 0.0 || Lng.value == 0.0) {
       print("⚠️ Coordinates not set for current location forecast");
       return;
     }
 
-    await fetchDailyForecast(currentLat.value, currentLng.value);
+    await WeatherForecastService.fetchWeatherForecast(Lat.value, Lng.value);
   }
 
   /// ✅ Save forecast to SharedPreferences
@@ -80,7 +65,7 @@ class DailyForecastController extends GetxController {
     loadWeeklyFromPrefs();
 
     // Optionally auto-fetch if coordinates are set
-    if (currentLat.value != 0.0 && currentLng.value != 0.0) {
+    if (Lat.value != 0.0 && Lng.value != 0.0) {
       fetchCurrentLocationForecast();
     }
   }

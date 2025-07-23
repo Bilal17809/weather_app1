@@ -34,7 +34,7 @@ class HomeScreen extends StatelessWidget {
           if (forecastCtr.dailyList.isEmpty) {
             return Text(
               'Loading...',
-              style: context.textTheme.bodyLarge?.copyWith(color: Colors.white),
+              style: context.textTheme.bodyLarge?.copyWith(color: kWhite),
             );
           }
 
@@ -49,7 +49,7 @@ class HomeScreen extends StatelessWidget {
                       onTap: () => Scaffold.of(context).openDrawer(),
                       child: const Icon(
                         Icons.menu,
-                        color: Colors.white,
+                        color: kWhite,
                         size: 28,
                       ),
                     ),
@@ -61,7 +61,7 @@ class HomeScreen extends StatelessWidget {
                     children: [
                       const Icon(
                         Icons.location_on,
-                        color: Colors.white,
+                        color: kWhite,
                         size: 17,
                       ),
                       const SizedBox(width: 5),
@@ -70,7 +70,7 @@ class HomeScreen extends StatelessWidget {
                         return Text(
                           cityName.isNotEmpty ? cityName : 'Locating...',
                           style: context.textTheme.bodyLarge?.copyWith(
-                            color: Colors.white,
+                            color: kWhite,
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -84,7 +84,7 @@ class HomeScreen extends StatelessWidget {
                   Text(
                     formattedDate,
                     style: context.textTheme.bodyLarge?.copyWith(
-                      color: Colors.white,
+                      color: kWhite,
                       fontSize: 12,
                     ),
                   ),
@@ -97,7 +97,7 @@ class HomeScreen extends StatelessWidget {
                       () => Navigator.pushNamed(context, RoutesName.citypage),
                   child: const Icon(
                     Icons.add_circle_sharp,
-                    color: Colors.white,
+                    color: kWhite,
                     size: 28,
                   ),
                 ),
@@ -118,8 +118,8 @@ class HomeScreen extends StatelessWidget {
               children: [
                 /// 🌤️ Current weather from GPS
                 Obx(() {
-                  final icon = cctr.iconUrl.value;
-                  final condition = cctr.conditionText.value;
+                  final icon = hourlyCtrl.iconUrl.value;
+                  final condition = hourlyCtrl.conditionText.value;
 
                   return Column(
                     children: [
@@ -138,7 +138,7 @@ class HomeScreen extends StatelessWidget {
                       Text(
                         condition.isNotEmpty ? condition : 'Fetching...',
                         style: context.textTheme.bodyLarge?.copyWith(
-                          color: Colors.white,
+                          color:kWhite,
                           fontSize: 20,
                         ),
                       ),

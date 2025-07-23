@@ -1,4 +1,4 @@
-import 'package:intl/intl.dart';
+
 
 class DailyForecast {
   final String date;
@@ -20,8 +20,7 @@ class DailyForecast {
   });
 
   factory DailyForecast.fromJson(Map<String, dynamic> json) {
-    final parsedDate = DateTime.parse(json['date']);
-    return DailyForecast(
+     return DailyForecast(
       date: json['date'],
       dayName:json['forecast']['forecastday'],
       maxTemp: (json['day']['maxtemp_c'] as num).toDouble(),

@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-
-import '../../../core/common/controller/controller.dart';
 import '../../../core/routes/routes_name.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../hourly_forecast/contrl/hourly_contrl.dart';
@@ -47,12 +45,11 @@ class _DailyCastPageState extends State<DailyCastPage> with WidgetsBindingObserv
     final routeName = ModalRoute.of(context)?.settings.name;
 
     if (routeName == '/') {
-      final lat = controller.currentLat.value;
-      final lng = controller.currentLng.value;
+
 
       final now = DateFormat('hh:00 a').format(DateTime.now());
       controller.setSelectedHour(now);
-      controller.fetchHourlyForecast(lat, lng);
+      controller.fetchFullForecastForCurrentLocation();
     }
   }
 

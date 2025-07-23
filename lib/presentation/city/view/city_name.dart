@@ -7,18 +7,16 @@ import '../../../core/common/controller/controller.dart';
 import '../../../core/common_widgets/overlay_widget.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_styles.dart';
-import '../../daily_forecast/contrl/daily_contrl.dart';
-import '../../hourly_forecast/contrl/hourly_contrl.dart';
+import '../../weather/contl/weather_service.dart';
 import '../contrl/favt_controller.dart';
 import '../../home/view/home_page.dart';
+
 class CityName extends StatefulWidget {
   const CityName({super.key});
 
   @override
   State<CityName> createState() => _CityNameState();
 }
-
-
 
 class _CityNameState extends State<CityName> {
   final CityController ctr = Get.find();
@@ -29,27 +27,22 @@ class _CityNameState extends State<CityName> {
     return Obx(() {
       if (ctr.loading.value) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          showLoadingOverlay(context);  // ✅ Safe to show overlay now
+          showLoadingOverlay(context); // ✅ Safe to show overlay now
         });
       }
 
-      if (ctr.filteredList.isEmpty) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          showLoadingOverlay(context);  // ✅ Safe to show overlay now
-        });
-      }
-
-      final favoriteCities = ctr.filteredList.where((c) => c.isFavorite).toList();
+      final favoriteCities =
+          ctr.filteredList.where((c) => c.isFavorite).toList();
       final otherCities = ctr.filteredList.where((c) => !c.isFavorite).toList();
 
       return ListView(
         padding: const EdgeInsets.symmetric(horizontal: 13),
         children: [
           InkWell(
-            onTap: (){
-
+            onTap: () {
               // Fetch location weather
-              Get.find<CurrentWeatherController>().getCurrentLocationAndFetchWeather();
+              Get.find<CurrentWeatherController>()
+                  .getCurrentLocationAndFetchWeather();
               // Get.find<DailyForecastController>().getCurrentLocationAndFetchDaily()
               Get.find<CityController>().loadCityPreview();
               // Navigate to home screen
@@ -78,7 +71,6 @@ class _CityNameState extends State<CityName> {
                       ],
                     ),
                   ),
-
                 ],
               ),
             ),
@@ -127,13 +119,18 @@ class _CityNameState extends State<CityName> {
         height: 70,
         decoration: roundedWithGradient(city),
         child: InkWell(
-          onTap: () {
-            ctr.setSelectedCity(city);
+          onTap: () async {
+            ctr.selectedCity.value = city; // ✅ assign whole Malta object
+            await WeatherForecastService.fetchWeatherForecast(
+              city.lat,
+              city.lng,
+            );
             Navigator.push(
               context,
               MaterialPageRoute(builder: (context) => HomeScreen()),
             );
           },
+
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -154,7 +151,11 @@ class _CityNameState extends State<CityName> {
                           ),
                         ),
                         const SizedBox(width: 2),
-                        const Icon(Icons.location_pin, color: dividerColor, size: 17),
+                        const Icon(
+                          Icons.location_pin,
+                          color: dividerColor,
+                          size: 17,
+                        ),
                       ],
                     ),
                     Obx(() {
@@ -220,7 +221,9 @@ class _CityNameState extends State<CityName> {
                   ),
                   IconButton(
                     icon: Icon(
-                      city.isFavorite ? Icons.remove_circle : Icons.add_circle_sharp,
+                      city.isFavorite
+                          ? Icons.remove_circle
+                          : Icons.add_circle_sharp,
                       color: kWhite,
                     ),
                     onPressed: () {
@@ -254,6 +257,3 @@ class _CityNameState extends State<CityName> {
     );
   }
 }
-
-
-

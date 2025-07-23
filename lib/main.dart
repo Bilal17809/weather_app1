@@ -5,9 +5,6 @@ import 'package:get/get.dart';
 import 'package:weather/core/routes/routes.dart';
 import 'package:weather/core/routes/routes_name.dart';
 import 'package:weather/presentation/city/contrl/favt_controller.dart';
-
-
-import 'Example.dart';
 import 'core/common/controller/controller.dart';
 import 'core/common/controller/current_weather_controller.dart';
 Future<void> requestOverlayPermission() async {

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
-
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_styles.dart';
 import '../contrl/hourly_contrl.dart';
@@ -45,7 +43,7 @@ class hourly_cast extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: isSelected ? Colors.white24 : Colors.transparent,
                         border: Border.all(
-                          color: isSelected ? Colors.white : Colors.transparent,
+                          color: isSelected ? kWhite : Colors.transparent,
                           width: 2,
                         ),
                         borderRadius: BorderRadius.circular(16),

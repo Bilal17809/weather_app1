@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
-import 'package:weather/presentation/hourly_forecast/contrl/hourly_contrl.dart';
 import 'package:weather/presentation/weather/view/w_forter.dart';
 import '../../../core/common/controller/controller.dart' show CityController;
 import '../../../core/common/controller/current_weather_controller.dart';
@@ -90,7 +89,7 @@ class weather extends StatelessWidget {
 
               final icon = cctr.iconUrl.value;
               final condition = cctr.conditionText.value;
-              final temp = cctr.currentTemperature.value;
+
 
               return Column(
                 children: [

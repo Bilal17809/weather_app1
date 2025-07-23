@@ -2,103 +2,67 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:http/http.dart' as http;
-import 'package:intl/intl.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
+import '../../../core/common/controller/controller.dart';
 import '../../../data/model/hourly_model.dart';
+import '../../weather/contl/weather_service.dart';
+
 
 class HourlyForecastController extends GetxController {
   final RxList<HourlyWeather> hourlyList = <HourlyWeather>[].obs;
-  RxInt selectedHourIndex = 0.obs;
-  RxDouble currentLat = 0.0.obs;
-  RxDouble currentLng = 0.0.obs;
-  var currentLocationDetail = Rxn<HourlyWeather>();
-  var currentTemperature = 0.0.obs;
-  var selectedHourTime = ''.obs;
-  var setSelectedHour=''.obs;
+  final RxInt selectedHourIndex = 0.obs;
+  final RxDouble Lat = 0.0.obs;
+  final RxDouble Lng = 0.0.obs;
+
+  final Rx<HourlyWeather?> currentLocationDetail = Rx<HourlyWeather?>(null);
+  final RxDouble currentTemperature = 0.0.obs;
+  final RxString selectedHourTime = ''.obs;
+  final RxString setSelectedHour = ''.obs;
+  final RxString conditionText = ''.obs;
+  final RxString iconUrl = ''.obs;
 
   final ScrollController scrollController = ScrollController();
 
-  final String apiKey = 'YOUR_API_KEY'; // Replace with your actual WeatherAPI key
-
-  Future<void> fetchHourlyForecast(double lat, double lon) async {
-    try {
-      final now = DateTime.now();
-      final formattedDate = DateFormat('yyyy-MM-dd').format(now);
-
-      final url = Uri.parse(
-        'http://api.weatherapi.com/v1/forecast.json?key=8e1b9cfeaccc48c4b2b85154230304&q=$lat,$lon&days=7&aqi=no&alerts=no',
-      );
-
-      final response = await http.get(url);
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final List<dynamic> forecastHourList =
-        data['forecast']['forecastday'][0]['hour']; // Only today's hourly data
-
-        final List<HourlyWeather> parsed = forecastHourList
-            .map((json) => HourlyWeather.fromJson(json))
-            .toList();
-
-        hourlyList.assignAll(parsed);
-
-        // Save in SharedPreferences
-        final prefs = await SharedPreferences.getInstance();
-        final encoded = jsonEncode(parsed.map((e) => e.toJson()).toList());
-        await prefs.setString('hourly_forecast', encoded);
-
-        autoScrollToCurrentHour();
-
-        print('✅ Hourly forecast fetched and saved (${parsed.length} items)');
-      } else {
-        print('❌ Failed to fetch hourly data. Status: ${response.statusCode}');
-      }
-    } catch (e) {
-      print('⚠️ Error fetching hourly forecast: $e');
-    }
-  }
-
-
+  /// ✅ Load hourly forecast from SharedPreferences based on selected city
   Future<void> loadFromPreferences() async {
     final prefs = await SharedPreferences.getInstance();
-    final jsonString = prefs.getString('hourly_forecast');
+    final city = Get.find<CityController>().selectedCity.value;
+    final cityKey = 'hourly_forecast_$city';
+
+    final jsonString = prefs.getString(cityKey);
 
     if (jsonString != null) {
       final List<dynamic> decoded = jsonDecode(jsonString);
-      final restoredList =
+      final List<HourlyWeather> restoredList =
       decoded.map((e) => HourlyWeather.fromFlatJson(e)).toList();
+
       hourlyList.assignAll(restoredList);
 
-      print('📥 Loaded hourly forecast from SharedPreferences (${restoredList.length} items)');
-      autoScrollToCurrentHour();
-    } else {
-      print('ℹ️ No saved hourly forecast found.');
-    }
-  }
-  Future<void> loadHourlyFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String>? hourlyJsonList = prefs.getStringList('hourly_data');
-
-    if (hourlyJsonList != null && hourlyJsonList.isNotEmpty) {
-      final List<HourlyWeather> loadedHourly = hourlyJsonList
-          .map((jsonStr) => HourlyWeather.fromFlatJson(jsonDecode(jsonStr)))
-          .toList();
-
-      hourlyList.assignAll(loadedHourly);
-      hourlyList.refresh();
-
-      if (loadedHourly.isNotEmpty) {
-        currentLocationDetail.value = loadedHourly.first;
-        currentTemperature.value = loadedHourly.first.temperature;
+      if (restoredList.isNotEmpty) {
+        currentLocationDetail.value = restoredList.first;
+        currentTemperature.value = restoredList.first.temperature;
       }
 
-      print("✅ Loaded ${loadedHourly.length} hourly items from storage");
+      print('📥 Loaded $city hourly forecast from SharedPreferences (${restoredList.length} items)');
+      autoScrollToCurrentHour();
     } else {
-      print("⚠️ No hourly forecast data found in SharedPreferences");
+      print('ℹ️ No saved hourly forecast found for $city.');
     }
   }
 
+  /// ✅ Check internet and fetch fresh forecast if online
+  Future<void> fetchFullForecastForCurrentLocation() async {
+    final connectivity = await Connectivity().checkConnectivity();
+    if (connectivity == ConnectivityResult.none) {
+      print('📴 Offline – skipping API fetch');
+      return;
+    }
+
+    await WeatherForecastService.fetchWeatherForecast(Lat.value, Lng.value);
+  }
+
+  /// ✅ Auto-scroll to current hour in the horizontal hourly scroll list
   void autoScrollToCurrentHour() {
     final now = DateTime.now();
     final index = hourlyList.indexWhere((h) => h.rawTime.hour == now.hour);
@@ -106,7 +70,7 @@ class HourlyForecastController extends GetxController {
     if (index != -1) {
       Future.delayed(const Duration(milliseconds: 400), () {
         scrollController.animateTo(
-          index * 90.0,
+          index * 90.0, // Adjust based on card width
           duration: const Duration(milliseconds: 500),
           curve: Curves.easeInOut,
         );
@@ -117,7 +81,8 @@ class HourlyForecastController extends GetxController {
   @override
   void onInit() {
     super.onInit();
-    loadFromPreferences();
+    loadFromPreferences(); // Load offline cache
+    fetchFullForecastForCurrentLocation(); // Try online fetch
   }
 
   @override

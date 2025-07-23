@@ -9,7 +9,7 @@ import 'routes_name.dart';
 
 class Routes {
   static Route<dynamic> generateRoute(RouteSettings settings) {
-    final arguments = settings.arguments;
+
 
     switch (settings.name) {
       case RoutesName.splashPage:

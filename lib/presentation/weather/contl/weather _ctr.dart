@@ -1,10 +1,5 @@
-
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
-
 import '../../../data/model/forecast.dart';
-import '../../../data/model/wpaw_model.dart';
+
 
 class WeatherForecastResponse {
   final List<DailyForecast> forecastDays;
