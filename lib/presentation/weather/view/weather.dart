@@ -1,38 +1,40 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 import 'package:weather/presentation/weather/view/w_forter.dart';
-import '../../../core/common/controller/controller.dart' show CityController;
+import '../../../core/common/controller/controller.dart';
 import '../../../core/common/controller/current_weather_controller.dart';
+
 import '../../../core/routes/routes_name.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_styles.dart';
 import '../../daily_forecast/contrl/daily_contrl.dart';
+import '../contl/weather _ctr.dart';
 
 class weather extends StatelessWidget {
   weather({super.key});
+
   final CityController ctr = Get.put(CityController());
   final cctr = Get.find<CurrentWeatherController>();
   final forecastCtr = Get.find<DailyForecastController>();
+  final weatherController = Get.put(WeatherController());
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFF001B31),
+        backgroundColor: const Color(0xFF001B31),
         automaticallyImplyLeading: false,
         title: Obx(() {
           final selectedDay = forecastCtr.dailyList.isNotEmpty
               ? DateTime.parse(forecastCtr.dailyList[forecastCtr.selectedDayIndex.value].date)
               : DateTime.now();
-
           final formattedDate = DateFormat('EEEE d MMMM').format(selectedDay);
 
           return Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-             SizedBox(width: 40,),
-
+              const SizedBox(width: 40),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -57,7 +59,10 @@ class weather extends StatelessWidget {
                   ),
                   Text(
                     formattedDate,
-                    style: context.textTheme.bodyLarge?.copyWith(color: Colors.white, fontSize: 12),
+                    style: context.textTheme.bodyLarge?.copyWith(
+                      color: Colors.white,
+                      fontSize: 12,
+                    ),
                   ),
                 ],
               ),
@@ -71,25 +76,17 @@ class weather extends StatelessWidget {
             ],
           );
         }),
-
-
-
       ),
       body: Container(
         decoration: bgwithgradent,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            SizedBox(height: 20),
-
-            SizedBox(height: 25),
+            const SizedBox(height: 20),
+            const SizedBox(height: 25),
             Obx(() {
-              final detail = Get.find<CityController>().details;
-              print("🔍 detail length: ${detail.length}"); // DEBUG
-
               final icon = cctr.iconUrl.value;
               final condition = cctr.conditionText.value;
-
 
               return Column(
                 children: [
@@ -100,10 +97,9 @@ class weather extends StatelessWidget {
                       height: 180,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
-                        return Icon(Icons.error, color: kWhite);
+                        return const Icon(Icons.error, color: kWhite);
                       },
                     ),
-
                   const SizedBox(height: 10),
                   Text(
                     condition.isNotEmpty ? condition : 'Fetching...',
@@ -115,18 +111,12 @@ class weather extends StatelessWidget {
                 ],
               );
             }),
-            SizedBox(height: 8),
-
-            Divider(
-              color:textGreyColor, // Line color
-              thickness: 1, // Line thickness
-            ),
+            const SizedBox(height: 8),
+            const Divider(color: textGreyColor, thickness: 1),
             Padding(
               padding: const EdgeInsets.only(left: 50, right: 30),
               child: Obx(() {
-                final detail = Get.find<CityController>().details;
-
-                print("🔍 details length: ${detail.length}");
+                final detail = weatherController.details;
 
                 if (detail.isEmpty) {
                   return Center(
@@ -152,29 +142,25 @@ class weather extends StatelessWidget {
                 );
               }),
             ),
-
-            Divider(
-              color: textGreyColor, // Line color
-              thickness: 1, // Line thickness
-            ),
+            const Divider(color: textGreyColor, thickness: 1),
             Weather_forter(),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
           ],
         ),
       ),
     );
   }
-}
 
-Widget buildInfoRow(String label, String value) {
-  return Padding(
-    padding: const EdgeInsets.only(bottom: 10),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: TextStyle(color: kWhite)),
-        Text(value, style: TextStyle(color: kWhite)),
-      ],
-    ),
-  );
+  Widget buildInfoRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: const TextStyle(color: kWhite)),
+          Text(value, style: const TextStyle(color: kWhite)),
+        ],
+      ),
+    );
+  }
 }

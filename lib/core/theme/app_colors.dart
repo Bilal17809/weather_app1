@@ -38,6 +38,7 @@ const Color textWhiteColor = Color(0xFFFFFFFF);
 const Color textGreyColor = Color(0xff626262);
 const cyanTextColor = Color(0xFF35BEAE);
 const skyTextColor = Color(0xFF569CD4);
+const minitempcolor=Color(0xFF01474E);
 
 //app primary
 const appBarBgColor = Colors.white;

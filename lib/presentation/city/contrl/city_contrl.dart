@@ -20,7 +20,7 @@ class Controller extends GetxController {
   }
 
   Future<void> loadCities() async {
-    final String jsonString = await rootBundle.loadString('assets/MaltaWeather.json');
+    final String jsonString = await rootBundle.loadString('assets/MaltaWeather_sorted.json');
     final List<dynamic> jsonData = json.decode(jsonString);
 
     cityList.value = jsonData.map((e) => Malta.fromJson(e)).toList();

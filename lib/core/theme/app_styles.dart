@@ -183,3 +183,10 @@ final BoxDecoration  currenlocation=BoxDecoration(
     ),
   ],
 );
+// final RoundedRectangleBorder citybg=RoundedRectangleBorder(
+//   gradient: LinearGradient(
+//     begin: Alignment.topCenter,
+//     end: Alignment.bottomCenter,
+//     colors: [bgDark2, bgDark, bgPrimary, bgSecondary],
+//   ),
+// );

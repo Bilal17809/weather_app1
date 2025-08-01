@@ -15,7 +15,7 @@ class CityScreen extends StatefulWidget {
 }
 
 class _CityScreenState extends State<CityScreen> {
-  final CityController ctr = Get.find();
+  final CityController ctr =Get.find<CityController>();
   final FavoriteController favController = Get.find<FavoriteController>();
   final TextEditingController searchController = TextEditingController();
   @override

@@ -1,19 +1,35 @@
-import '../../../data/model/forecast.dart';
+import 'dart:convert';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:weather/presentation/weather/contl/weather_service.dart';
 
+import '../../../data/model/wpaw_model.dart';
 
-class WeatherForecastResponse {
-  final List<DailyForecast> forecastDays;
+class WeatherController extends GetxController {
+  var details = <WeatherDetail>[].obs;
 
-  WeatherForecastResponse({required this.forecastDays});
+  Future<void> fetchWeatherDetail({required double lat, required double lng}) async {
+    try {
+      final data =  await WeatherApiService.getForecast(lat, lng);
+      final weatherDetail = WeatherDetail.fromJson(data);
 
-  factory WeatherForecastResponse.fromJson(Map<String, dynamic> json) {
-    final List forecastList = json['forecast']?['forecastday'] ?? [];
+      // Save to SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString('weather_${lat}_$lng', jsonEncode(data));
 
-    return WeatherForecastResponse(
-      forecastDays: forecastList
-          .map((item) => DailyForecast.fromJson(item))
-          .toList(),
-    );
+      details.assign(weatherDetail);
+    } catch (e) {
+      print("❌ Error fetching weather detail: $e");
+
+      // Try loading from SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final cached = prefs.getString('weather_${lat}_$lng');
+
+      if (cached != null) {
+        final decoded = jsonDecode(cached);
+        details.assign(WeatherDetail.fromJson(decoded));
+      }
+    }
   }
-
 }

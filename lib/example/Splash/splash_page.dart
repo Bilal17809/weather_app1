@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
 import '../../core/theme/app_colors.dart';
-import '../../presentation/animation/animation.dart';
-import '../../presentation/animation/text_animation.dart';
+import '../s_animation/animation.dart';
+import '../s_animation/text_animation.dart';
 import '../city/ctr/e_city_controller.dart';
 import '../home/screen/home_screen.dart';
 

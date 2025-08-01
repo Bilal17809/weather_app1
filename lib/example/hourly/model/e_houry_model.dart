@@ -3,14 +3,14 @@ class E_HourlyWeather {
   final String temperature;
   final String condition;
   final String iconUrl;
-  final bool isCurrentHour;
+  final bool isCurrentHour; // Optional, useful for caching
 
   E_HourlyWeather({
     required this.time,
     required this.temperature,
     required this.condition,
     required this.iconUrl,
-    this.isCurrentHour = false,
+    this.isCurrentHour = false, // default to false
   });
 
   factory E_HourlyWeather.fromJson(Map<String, dynamic> json) {

@@ -13,6 +13,12 @@ class Malta {
   double? temperature;
   bool isFavorite;
 
+  // ✅ Optional Weather Info
+  String? conditionText;
+  String? conditionIcon;
+  int? airQualityIndex;
+   String? airQualityText;
+
   Malta({
     required this.city,
     required this.cityAscii,
@@ -26,11 +32,24 @@ class Malta {
     this.population,
     required this.id,
     this.temperature,
+    this.conditionText,
+    this.conditionIcon,
     this.isFavorite = false,
+    this.airQualityIndex,
+    this.airQualityText,
   });
 
-
   factory Malta.fromJson(Map<String, dynamic> json) {
+    final airQualityString = json['airQuality'];
+    int? parsedIndex;
+    String? parsedText;
+
+    if (airQualityString != null && airQualityString is String && airQualityString.contains(' - ')) {
+      final parts = airQualityString.split(' - ');
+      parsedIndex = int.tryParse(parts[0]);
+      parsedText = parts.length > 1 ? parts[1] : null;
+    }
+
     return Malta(
       city: json['city'],
       cityAscii: json['city_ascii'],
@@ -43,7 +62,12 @@ class Malta {
       capital: json['capital'],
       population: json['population'] != null ? (json['population'] as num).toInt() : null,
       id: json['id'],
+      temperature: (json['temperature'] as num?)?.toDouble(),
+      conditionText: json['conditionText'],
+      conditionIcon: json['conditionIcon'],
       isFavorite: json['isFavorite'] ?? false,
+      airQualityIndex: parsedIndex,
+      airQualityText: parsedText,
     );
   }
 
@@ -61,7 +85,13 @@ class Malta {
       'population': population,
       'id': id,
       'temperature': temperature,
+      'conditionText': conditionText,
+      'conditionIcon': conditionIcon,
       'isFavorite': isFavorite,
+      'airQuality': airQualityIndex != null && airQualityText != null
+          ? "$airQualityIndex - $airQualityText"
+          : null,
     };
   }
+
 }

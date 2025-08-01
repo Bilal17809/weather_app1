@@ -1,41 +1,34 @@
+// lib/data/model/hourly_model.dart
 import 'package:intl/intl.dart';
 
 class HourlyWeather {
-  final String time; // e.g., "08:00 AM"
+  final String time;
   final double temperature;
   final String icon;
-  final DateTime rawTime; // <-- new field to hold actual DateTime
+  final DateTime rawTime;
 
-  HourlyWeather({
-    required this.time,
-    required this.temperature,
-    required this.icon,
-    required this.rawTime,
-  });
+  HourlyWeather({required this.time, required this.temperature, required this.icon, required this.rawTime});
 
-  factory HourlyWeather.fromJson(Map<String, dynamic> json) {
-    final dateTime = DateTime.parse(json['time']);
+  factory HourlyWeather.fromJson(Map<String, dynamic> j) {
+    final dt = DateTime.parse(j['time']);
     return HourlyWeather(
-      time: DateFormat('hh:mm a').format(dateTime),
-      rawTime: dateTime, // Save original
-      temperature: (json['temp_c'] as num).toDouble(),
-      icon: "https:${json['condition']['icon']}",
+      rawTime: dt,
+      time: DateFormat('hh:mm a').format(dt),
+      temperature: (j['temp_c'] as num).toDouble(),
+      icon: 'https:${j['condition']['icon']}',
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'time': time,
-    'temperature': temperature,
-    'icon': icon,
-    'rawTime': rawTime.toIso8601String(), // save in prefs
+    'time': time, 'temperature': temperature, 'icon': icon, 'rawTime': rawTime.toIso8601String()
   };
 
-  factory HourlyWeather.fromFlatJson(Map<String, dynamic> json) {
+  factory HourlyWeather.fromFlatJson(Map<String, dynamic> j) {
     return HourlyWeather(
-      time: json['time'],
-      temperature: json['temperature'],
-      icon: json['icon'],
-      rawTime: DateTime.parse(json['rawTime']),
+      rawTime: DateTime.parse(j['rawTime']),
+      time: j['time'],
+      temperature: (j['temperature'] as num).toDouble(),
+      icon: j['icon'],
     );
   }
 }

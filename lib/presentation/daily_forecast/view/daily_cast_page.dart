@@ -1,175 +1,86 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
-import '../../../core/routes/routes_name.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../hourly_forecast/contrl/hourly_contrl.dart';
-import '../contrl/daily_contrl.dart';
 
-class DailyCastPage extends StatefulWidget {
+import '../../../presentation/daily_forecast/contrl/daily_contrl.dart';
+
+class DailyCastPage extends StatelessWidget {
   const DailyCastPage({super.key});
 
   @override
-  State<DailyCastPage> createState() => _DailyCastPageState();
-}
-
-class _DailyCastPageState extends State<DailyCastPage> with WidgetsBindingObserver {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  // Called when returning to app
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      _resetToTodayIfOnHome();
-    }
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _resetToTodayIfOnHome();
-  }
-
-  void _resetToTodayIfOnHome() {
-    final controller = Get.find<HourlyForecastController>();
-    final routeName = ModalRoute.of(context)?.settings.name;
-
-    if (routeName == '/') {
-
-
-      final now = DateFormat('hh:00 a').format(DateTime.now());
-      controller.setSelectedHour(now);
-      controller.fetchFullForecastForCurrentLocation();
-    }
-  }
-
-
-  @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(left: 10, right: 10),
-      child: Obx(() {
-        final controller = Get.find<DailyForecastController>();
-        final daily = controller.dailyList;
+    final controller = Get.find<DailyForecastController>();
 
-        print("📅 Daily forecast items: ${daily.length}");
+    return Obx(() {
+      final list = controller.dailyList;
 
-        if (daily.isEmpty) {
-          return Center(
-            child: Text(
-              "⚠️ Forecast data not available.",
-              style: context.textTheme.bodyLarge?.copyWith(color: kWhite, fontSize: 16),
-            ),
-          );
-        }
+      if (list.isEmpty) {
+        return const Center(
+          child: Text("No forecast available", style: TextStyle(color: Colors.white)),
+        );
+      }
 
-          return SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: List.generate(daily.length.clamp(0, 7), (index) {
-                final w = daily[index];
-                return InkWell(
-                  onTap: () {
-                    Navigator.pushNamed(context, RoutesName.weatherpage);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 6),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            child: Text("7-Day Forecast",
+                style: context.textTheme.titleMedium?.copyWith(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                )),
+          ),
+          SizedBox(
+            height: 140,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              itemCount: list.length,
+              itemBuilder: (context, index) {
+                final item = list[index];
+                final dayName = DateFormat('EEE').format(DateTime.parse(item.date));
+                final isSelected = controller.selectedDayIndex.value == index;
+
+                return GestureDetector(
+                  onTap: () => controller.selectedDayIndex.value = index,
+                  child: Container(
+                    width: 100,
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    decoration: BoxDecoration(
+                      color: isSelected ? Colors.white.withOpacity(0.15) : Colors.white10,
+                      borderRadius: BorderRadius.circular(12),
+                      border: isSelected
+                          ? Border.all(color: Colors.white, width: 1.5)
+                          : null,
+                    ),
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        SizedBox(height: 9),
+                        Text(dayName,
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            )),
+                        const SizedBox(height: 6),
                         Image.network(
-                          w.iconUrl,
-                          width: 70,
-                          height: 70,
-                          fit: BoxFit.cover,
+                          item.iconUrl,
+                          width: 48,
+                          height: 48,
                           errorBuilder: (context, error, stackTrace) =>
-                              Icon(Icons.error, color: kRed),
+                          const Icon(Icons.cloud, color: Colors.white, size: 40),
                         ),
-                        SizedBox(height: 10),
-                        Text(
-                          w.dayName,
-                          style: context.textTheme.bodyLarge?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: kWhite,
-                            fontSize: 14,
-                          ),
-                        ),
-                        SizedBox(height: 4),
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: "${w.maxTemp.round()}",
-                                style: context.textTheme.bodyLarge?.copyWith(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF01474E),
-                                ),
-                              ),
-                              WidgetSpan(
-                                child: Transform.translate(
-                                  offset: Offset(2, 1),
-                                  child: Text(
-                                    '°',
-                                    style: context.textTheme.bodyLarge?.copyWith(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF01474E),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        Text.rich(
-                          TextSpan(
-                            children: [
-                              TextSpan(
-                                text: "${w.minTemp.round()}",
-                                style: context.textTheme.bodyLarge?.copyWith(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: kWhite,
-                                ),
-                              ),
-                              WidgetSpan(
-                                child: Transform.translate(
-                                  offset: Offset(2, 1),
-                                  child: Text(
-                                    '°',
-                                    style: context.textTheme.bodyLarge?.copyWith(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: kWhite,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
+                        const SizedBox(height: 4),
+                        Text("${item.maxTemp}° / ${item.minTemp}°",
+                            style: const TextStyle(color: Colors.white)),
                       ],
                     ),
                   ),
                 );
-              }),
+              },
             ),
-          );
-        }),
-
-
+          ),
+        ],
       );
-
+    });
   }
 }

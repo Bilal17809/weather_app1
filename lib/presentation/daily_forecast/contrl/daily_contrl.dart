@@ -1,72 +1,39 @@
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:get/get.dart';
-import 'dart:convert';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:geolocator/geolocator.dart';
+import '../../../presentation/weather/contl/weather_service.dart';
 import '../../../data/model/forecast.dart';
-import '../../weather/contl/weather_service.dart';
 
 class DailyForecastController extends GetxController {
   RxList<DailyForecast> dailyList = <DailyForecast>[].obs;
-  final selectedDayIndex = 0.obs;
+  var selectedDayIndex = 0.obs;
 
-  /// ✅ Coordinates for current location
-  final RxDouble Lat = 0.0.obs;
-  final RxDouble Lng = 0.0.obs;
-
-  /// ✅ Fetch daily forecast for any given lat/lng
-  Future<void> fetchFullForecastForCurrentLocation() async {
-    final connectivity = await Connectivity().checkConnectivity();
-    if (connectivity == ConnectivityResult.none) {
-      print('📴 Offline – skipping API fetch');
-      return;
+  /// ✅ Fetch 7-day forecast from lat/lng
+  Future<void> fetchDailyForecast(double lat, double lng) async {
+    try {
+      final json = await WeatherApiService.getForecast(lat, lng);
+      final data = json['forecast']['forecastday'] as List;
+      dailyList.value = data.map((e) => DailyForecast.fromJson(e)).toList();
+      selectedDayIndex.value = 0;
+    } catch (e) {
+      print('❌ Daily forecast error: $e');
     }
-    await WeatherForecastService.fetchWeatherForecast(Lat.value, Lng.value);
   }
 
-
-  /// ✅ Fetch forecast using stored current location
+  /// ✅ Fetch forecast using current GPS location
   Future<void> fetchCurrentLocationForecast() async {
-    if (Lat.value == 0.0 || Lng.value == 0.0) {
-      print("⚠️ Coordinates not set for current location forecast");
-      return;
-    }
+    try {
+      LocationPermission permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        await Geolocator.requestPermission();
+      }
 
-    await WeatherForecastService.fetchWeatherForecast(Lat.value, Lng.value);
-  }
+      final pos = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high);
 
-  /// ✅ Save forecast to SharedPreferences
-  Future<void> saveWeeklyToPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final jsonList = dailyList.map((d) => jsonEncode(d.toJson())).toList();
-    await prefs.setStringList('weekly_forecast', jsonList);
-  }
-
-  /// ✅ Load forecast from SharedPreferences
-  Future<void> loadWeeklyFromPrefs() async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String>? jsonList = prefs.getStringList('weekly_forecast');
-
-    if (jsonList != null && jsonList.isNotEmpty) {
-      final List<DailyForecast> loaded = jsonList
-          .map((str) => DailyForecast.fromFlatJson(jsonDecode(str)))
-          .toList();
-
-      dailyList.assignAll(loaded);
-      dailyList.refresh();
-      print("✅ Loaded ${loaded.length} weekly forecast items from storage");
-    } else {
-      print("⚠️ No weekly forecast data found in storage");
-    }
-  }
-
-  @override
-  void onInit() {
-    super.onInit();
-    loadWeeklyFromPrefs();
-
-    // Optionally auto-fetch if coordinates are set
-    if (Lat.value != 0.0 && Lng.value != 0.0) {
-      fetchCurrentLocationForecast();
+      await fetchDailyForecast(pos.latitude, pos.longitude);
+    } catch (e) {
+      print('❌ GPS forecast error: $e');
     }
   }
 }

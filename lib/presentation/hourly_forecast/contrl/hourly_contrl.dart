@@ -1,93 +1,98 @@
 import 'dart:convert';
-import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 
-import '../../../core/common/controller/controller.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
+import 'package:get/get_state_manager/src/simple/get_controllers.dart';
+import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../data/model/hourly_model.dart';
 import '../../weather/contl/weather_service.dart';
 
-
 class HourlyForecastController extends GetxController {
-  final RxList<HourlyWeather> hourlyList = <HourlyWeather>[].obs;
-  final RxInt selectedHourIndex = 0.obs;
-  final RxDouble Lat = 0.0.obs;
-  final RxDouble Lng = 0.0.obs;
+  var currentLocationHourlyList = <HourlyWeather>[].obs;
+  var selectedCityHourlyList = <HourlyWeather>[].obs;
 
-  final Rx<HourlyWeather?> currentLocationDetail = Rx<HourlyWeather?>(null);
-  final RxDouble currentTemperature = 0.0.obs;
-  final RxString selectedHourTime = ''.obs;
-  final RxString setSelectedHour = ''.obs;
-  final RxString conditionText = ''.obs;
-  final RxString iconUrl = ''.obs;
+  var selectedHourIndex = 0.obs;
+  var useCurrentLocation = true.obs;
 
-  final ScrollController scrollController = ScrollController();
+  final scrollController = ScrollController();
 
-  /// ✅ Load hourly forecast from SharedPreferences based on selected city
-  Future<void> loadFromPreferences() async {
+  /// Dynamic list for the UI
+  List<HourlyWeather> get hourlyList =>
+      useCurrentLocation.value ? currentLocationHourlyList : selectedCityHourlyList;
+
+  /// ✅ Fetch and store hourly for current location
+  Future<void> fetchHourlyForCurrentLocation(double lat, double lng) async {
+    try {
+      final json = await WeatherApiService.getForecast(lat, lng);
+      final list = (json['forecast']['forecastday'][0]['hour'] as List)
+          .map((e) => HourlyWeather.fromJson(e)).toList();
+      currentLocationHourlyList.assignAll(list);
+      useCurrentLocation.value = true;
+      autoSelectCurrentHour();
+
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString('hourly_forecast_current_location',
+          jsonEncode(list.map((i) => i.toJson()).toList()));
+    } catch (e) {
+      print('❌ fetchHourlyForCurrentLocation error: $e');
+    }
+  }
+
+  /// ✅ Fetch and store hourly for selected city
+  Future<void> fetchHourlyForSelectedCity(double lat, double lng) async {
+    try {
+      final json = await WeatherApiService.getForecast(lat, lng);
+      final list = (json['forecast']['forecastday'][0]['hour'] as List)
+          .map((e) => HourlyWeather.fromJson(e)).toList();
+      selectedCityHourlyList.assignAll(list);
+      useCurrentLocation.value = false;
+      autoSelectCurrentHour();
+
+      final prefs = await SharedPreferences.getInstance();
+      prefs.setString('hourly_forecast_selected_city',
+          jsonEncode(list.map((i) => i.toJson()).toList()));
+    } catch (e) {
+      print('❌ fetchHourlyForSelectedCity error: $e');
+    }
+  }
+
+  /// ✅ Load both from local storage
+  Future<void> loadFromPrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    final city = Get.find<CityController>().selectedCity.value;
-    final cityKey = 'hourly_forecast_$city';
 
-    final jsonString = prefs.getString(cityKey);
-
-    if (jsonString != null) {
-      final List<dynamic> decoded = jsonDecode(jsonString);
-      final List<HourlyWeather> restoredList =
-      decoded.map((e) => HourlyWeather.fromFlatJson(e)).toList();
-
-      hourlyList.assignAll(restoredList);
-
-      if (restoredList.isNotEmpty) {
-        currentLocationDetail.value = restoredList.first;
-        currentTemperature.value = restoredList.first.temperature;
-      }
-
-      print('📥 Loaded $city hourly forecast from SharedPreferences (${restoredList.length} items)');
-      autoScrollToCurrentHour();
-    } else {
-      print('ℹ️ No saved hourly forecast found for $city.');
-    }
-  }
-
-  /// ✅ Check internet and fetch fresh forecast if online
-  Future<void> fetchFullForecastForCurrentLocation() async {
-    final connectivity = await Connectivity().checkConnectivity();
-    if (connectivity == ConnectivityResult.none) {
-      print('📴 Offline – skipping API fetch');
-      return;
+    final currentData = prefs.getString('hourly_forecast_current_location');
+    if (currentData != null) {
+      final list = (jsonDecode(currentData) as List)
+          .map((j) => HourlyWeather.fromFlatJson(j)).toList();
+      currentLocationHourlyList.assignAll(list);
     }
 
-    await WeatherForecastService.fetchWeatherForecast(Lat.value, Lng.value);
+    final selectedData = prefs.getString('hourly_forecast_selected_city');
+    if (selectedData != null) {
+      final list = (jsonDecode(selectedData) as List)
+          .map((j) => HourlyWeather.fromFlatJson(j)).toList();
+      selectedCityHourlyList.assignAll(list);
+    }
+
+    autoSelectCurrentHour();
   }
 
-  /// ✅ Auto-scroll to current hour in the horizontal hourly scroll list
+  void autoSelectCurrentHour() {
+    final nowHour = DateFormat('hh:00 a').format(DateTime.now());
+    final i = hourlyList.indexWhere((h) => h.time == nowHour);
+    if (i >= 0) selectedHourIndex.value = i;
+  }
+
   void autoScrollToCurrentHour() {
-    final now = DateTime.now();
-    final index = hourlyList.indexWhere((h) => h.rawTime.hour == now.hour);
-
-    if (index != -1) {
-      Future.delayed(const Duration(milliseconds: 400), () {
-        scrollController.animateTo(
-          index * 90.0, // Adjust based on card width
-          duration: const Duration(milliseconds: 500),
-          curve: Curves.easeInOut,
-        );
-      });
-    }
-  }
-
-  @override
-  void onInit() {
-    super.onInit();
-    loadFromPreferences(); // Load offline cache
-    fetchFullForecastForCurrentLocation(); // Try online fetch
-  }
-
-  @override
-  void onClose() {
-    scrollController.dispose();
-    super.onClose();
+    Future.delayed(Duration(milliseconds: 400), () {
+      final i = selectedHourIndex.value;
+      scrollController.animateTo(
+        i * 100.0,
+        duration: Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+    });
   }
 }

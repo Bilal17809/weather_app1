@@ -20,6 +20,7 @@ class SelectedDayDetailsWidget extends StatelessWidget {
   final E_CityController ctr = Get.put(E_CityController());
   final E_HourlyForecastController hourlyController = Get.put(E_HourlyForecastController());
 
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
@@ -122,7 +123,8 @@ class SelectedDayDetailsWidget extends StatelessWidget {
                 if (hourlyController.hourlyWeatherList.isEmpty) {
                   return const CircularProgressIndicator(color: Colors.white);
                 }
-                return E_HourlyCastWidget(hourlyData: hourlyController.hourlyWeatherList);
+                return E_HourlyCastWidget(hourlyData: hourlyController.hourlyWeatherList
+                  ,removeBackground: true,);
               }),
 
 

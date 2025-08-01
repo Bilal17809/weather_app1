@@ -7,6 +7,9 @@ import '../../../core/common/controller/controller.dart';
 import '../../../core/common_widgets/overlay_widget.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_styles.dart';
+import '../../../data/model/city_model.dart';
+ // 🔄 Make sure this points to the Malta model
+import '../../../data/model/wpaw_model.dart';
 import '../../weather/contl/weather_service.dart';
 import '../contrl/favt_controller.dart';
 import '../../home/view/home_page.dart';
@@ -19,45 +22,42 @@ class CityName extends StatefulWidget {
 }
 
 class _CityNameState extends State<CityName> {
-  final CityController ctr = Get.find();
+  final CityController ctr = Get.find<CityController>();
   final FavoriteController favController = Get.find();
+
+  bool _overlayShown = false;
 
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      if (ctr.loading.value) {
+      if (ctr.loading.value && !_overlayShown) {
+        _overlayShown = true;
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          showLoadingOverlay(context); // ✅ Safe to show overlay now
+          showLoadingOverlay(context);
         });
       }
 
-      final favoriteCities =
-          ctr.filteredList.where((c) => c.isFavorite).toList();
+      final favoriteCities = ctr.filteredList.where((c) => c.isFavorite).toList();
       final otherCities = ctr.filteredList.where((c) => !c.isFavorite).toList();
 
       return ListView(
         padding: const EdgeInsets.symmetric(horizontal: 13),
         children: [
           InkWell(
-            onTap: () {
-              // Fetch location weather
-              Get.find<CurrentWeatherController>()
-                  .getCurrentLocationAndFetchWeather();
-              // Get.find<DailyForecastController>().getCurrentLocationAndFetchDaily()
-              Get.find<CityController>().loadCityPreview();
-              // Navigate to home screen
+            onTap: () async {
+              await Get.find<CurrentWeatherController>().fetchCurrentLocationWeather();
+              await Get.find<CityController>().loadSavedCity();
               Navigator.pushNamed(context, RoutesName.homePage);
             },
             child: Container(
               height: 50,
               decoration: currenlocation,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: const Row(
                 children: [
                   Padding(
-                    padding: const EdgeInsets.only(left: 10),
+                    padding: EdgeInsets.only(left: 10),
                     child: Row(
-                      children: const [
+                      children: [
                         Icon(Icons.my_location, color: dividerColor),
                         SizedBox(width: 8),
                         Text(
@@ -79,7 +79,7 @@ class _CityNameState extends State<CityName> {
 
           if (favoriteCities.isNotEmpty) ...[
             const Padding(
-              padding: EdgeInsets.only(top: 3, bottom: 3),
+              padding: EdgeInsets.symmetric(vertical: 3),
               child: Text(
                 '⭐ Favorite Cities',
                 style: TextStyle(
@@ -92,9 +92,10 @@ class _CityNameState extends State<CityName> {
             const Divider(color: Colors.white24),
             ...favoriteCities.map((city) => buildCityCard(city)).toList(),
           ],
+
           if (otherCities.isNotEmpty) ...[
             const Padding(
-              padding: EdgeInsets.only(top: 3, bottom: 3),
+              padding: EdgeInsets.symmetric(vertical: 3),
               child: Text(
                 '📍 Other Cities',
                 style: TextStyle(
@@ -112,7 +113,8 @@ class _CityNameState extends State<CityName> {
     });
   }
 
-  Widget buildCityCard(city) {
+  /// Updated to use Malta, not WeatherDetail
+  Widget buildCityCard(Malta city) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Container(
@@ -120,21 +122,16 @@ class _CityNameState extends State<CityName> {
         decoration: roundedWithGradient(city),
         child: InkWell(
           onTap: () async {
-            ctr.selectedCity.value = city; // ✅ assign whole Malta object
-            await WeatherForecastService.fetchWeatherForecast(
-              city.lat,
-              city.lng,
-            );
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
-            );
-          },
+            // 🔄 Fetch full WeatherDetail when tapped
+            final json = await WeatherApiService.getForecast(city.lat, city.lng);
+            final detail = WeatherDetail.fromJson(json);
+            await ctr.updateSelectedCity(detail);
 
+            Navigator.push(context, MaterialPageRoute(builder: (_) => HomeScreen()));
+          },
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // City Name & Air Quality
               Padding(
                 padding: const EdgeInsets.only(top: 8.0, left: 10),
                 child: Column(
@@ -151,30 +148,19 @@ class _CityNameState extends State<CityName> {
                           ),
                         ),
                         const SizedBox(width: 2),
-                        const Icon(
-                          Icons.location_pin,
-                          color: dividerColor,
-                          size: 17,
-                        ),
+                        const Icon(Icons.location_pin, color: dividerColor, size: 17),
                       ],
                     ),
-                    Obx(() {
-                      final detail = Get.find<CityController>().details;
-                      if (detail.isEmpty) return const SizedBox();
-                      final d = detail.first;
-                      return Text(
-                        "Air Quality ${d.airQualityIndex} - ${d.airQualityText}",
-                        style: context.textTheme.bodyLarge?.copyWith(
-                          color: dividerColor,
-                          fontSize: 14,
-                        ),
-                      );
-                    }),
+                    Text(
+                      "Tap to view weather",
+                      style: context.textTheme.bodyLarge?.copyWith(
+                        color: dividerColor,
+                        fontSize: 14,
+                      ),
+                    ),
                   ],
                 ),
               ),
-
-              // Temperature & Favorite Toggle
               Row(
                 children: [
                   Padding(
@@ -184,9 +170,7 @@ class _CityNameState extends State<CityName> {
                         Row(
                           children: [
                             Text(
-                              city.temperature != null
-                                  ? city.temperature!.toStringAsFixed(1)
-                                  : '...',
+                              city.temperature?.toStringAsFixed(1) ?? '...',
                               style: context.textTheme.bodyLarge?.copyWith(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
@@ -204,33 +188,20 @@ class _CityNameState extends State<CityName> {
                             ),
                           ],
                         ),
-                        Obx(() {
-                          final detail = Get.find<CityController>().details;
-                          if (detail.isEmpty) return const SizedBox();
-                          final d = detail.first;
-                          return Text(
-                            d.conditionText,
-                            style: context.textTheme.bodySmall?.copyWith(
-                              fontSize: 12,
-                              color: kWhite,
-                            ),
-                          );
-                        }),
+                        const Text(
+                          "", // Optional: condition text can be added if cached
+                          style: TextStyle(fontSize: 12, color: kWhite),
+                        ),
                       ],
                     ),
                   ),
                   IconButton(
                     icon: Icon(
-                      city.isFavorite
-                          ? Icons.remove_circle
-                          : Icons.add_circle_sharp,
+                      city.isFavorite ? Icons.remove_circle : Icons.add_circle_sharp,
                       color: kWhite,
                     ),
                     onPressed: () {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        favController.toggleFavorite(city);
-                      });
-
+                      favController.toggleFavorite(city);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(

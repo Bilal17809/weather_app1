@@ -6,7 +6,7 @@ class WeatherForecastService {
 
   static Future<Map<String, dynamic>> Forecast(double lat, double lon) async {
     final url = Uri.parse(
-      'https://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=$lat,$lon&days=7&aqi=no&alerts=no',
+      'https://api.weatherapi.com/v1/forecast.json?key=$apiKey&q=$lat,$lon&days=7&aqi=yes&alerts=yes',
     );
 
     final response = await http.get(url);

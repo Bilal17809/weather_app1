@@ -5,6 +5,15 @@ class E_DailyForecast {
   final double maxTemp;
   final String conditionText;
   final String conditionIcon;
+  final double wind;
+  final int humidity;
+  final double pressure;
+  final double water;
+  final String moonrise;
+  final String moonset;
+
+  // 🔶 New fields for air quality
+
 
   E_DailyForecast({
     required this.date,
@@ -13,6 +22,13 @@ class E_DailyForecast {
     required this.maxTemp,
     required this.conditionText,
     required this.conditionIcon,
+    required this.wind,
+    required this.humidity,
+    required this.pressure,
+    required this.water,
+    required this.moonrise,
+    required this.moonset,
+
   });
 
   factory E_DailyForecast.fromJson(Map<String, dynamic> json) {
@@ -27,6 +43,15 @@ class E_DailyForecast {
       maxTemp: json['day']['maxtemp_c']?.toDouble() ?? 0.0,
       conditionText: json['day']['condition']['text'] ?? '',
       conditionIcon: json['day']['condition']['icon'] ?? '',
+      wind: json['day']['maxwind_kph']?.toDouble() ?? 0.0,
+      humidity: json['day']['avghumidity']?.toInt() ?? 0,
+      pressure: json['hour']?[0]['pressure_mb']?.toDouble() ?? 0.0,
+      water: json['day']['avgtemp_c']?.toDouble() ?? 0.0,
+      moonrise: json['astro']['moonrise'] ?? '',
+      moonset: json['astro']['moonset'] ?? '',
+
+      // ✅ Optional air quality, depends on your API structure
+
     );
   }
 
